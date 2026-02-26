@@ -115,7 +115,7 @@ curl http://localhost:8080/api/v1/subscribers/alice@ims.local
 
 ## Next Steps
 
-1. Review [ARCHITECTURE.md](ARCHITECTURE.md) for detailed architecture
+1. Review [Architecture Hierarchy](../architecture/hierarchy.md) for detailed architecture
 2. Configure Zero Trust Mode for production
 3. Set up persistent storage for HSS
 4. Configure TLS/SRTP for secure SIP
