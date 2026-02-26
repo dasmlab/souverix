@@ -33,7 +33,7 @@ theme:
 
 plugins:
   - search:
-      lang: en,fr
+      lang: en
 
 markdown_extensions:
   - admonition
@@ -107,8 +107,6 @@ nav:
           - CNF OpenShift: fr/architecture/cnf.md
           - Déploiement: fr/architecture/deploiement.md
       - Composants:
-          - Souverix Coeur: fr/composants/coeur.md
-          - Souverix Rempart: fr/composants/rempart.md
           - Souverix Relais: fr/composants/relais.md
           - Souverix Autorite: fr/composants/autorite.md
           - Souverix Vigie: fr/composants/vigie.md
@@ -117,17 +115,6 @@ nav:
           - Souverix Vigile: fr/composants/vigile.md
           - Souverix Federation: fr/composants/federation.md
           - Souverix Gouverne: fr/composants/gouverne.md
-      - Conformité:
-          - STIR/SHAKEN: fr/conformite/stir-shaken.md
-          - Interception légale: fr/conformite/interception-legale.md
-          - Urgence: fr/conformite/urgence.md
-      - Tests:
-          - Catalogue de tests: fr/tests/catalogue.md
-          - Tests STIR/SHAKEN: fr/tests/stir-shaken-catalogue.md
-          - Tests LI/Urgence: fr/tests/li-urgence-catalogue.md
-          - PIXIT: fr/tests/pixit.md
-          - KPI/SLO: fr/tests/kpi-slo.md
-          - Certification: fr/tests/certification.md
       - Opérations:
           - Démarrage: fr/operations/demarrage.md
           - Configuration: fr/operations/configuration.md
