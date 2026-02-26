@@ -1,0 +1,144 @@
+site_name: Souverix Documentation
+site_description: Sovereign signaling doctrine (IMS + SIG-GW)
+site_url: https://dasmlab.github.io/souverix/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+  language: en
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search:
+      lang: en,fr
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.arithmatex
+  - toc:
+      permalink: true
+  - attr_list
+  - footnotes
+  - tables
+
+nav:
+  - Home: index.md
+
+  - English:
+      - Overview: en/index.md
+      - Platform:
+          - Platform Doctrine: en/platform/doctrine.md
+          - Components: en/platform/components.md
+          - Naming: en/platform/naming.md
+          - Repository Structure: en/platform/repository.md
+      - Architecture:
+          - Hierarchy: en/architecture/hierarchy.md
+          - OpenShift CNF: en/architecture/cnf.md
+          - Deployment: en/architecture/deployment.md
+      - Components:
+          - Souverix Coeur: en/components/coeur.md
+          - Souverix Rempart: en/components/rempart.md
+          - Souverix Relais: en/components/relais.md
+          - Souverix Autorite: en/components/autorite.md
+          - Souverix Vigie: en/components/vigie.md
+          - Souverix Mandat: en/components/mandat.md
+          - Souverix Priorite: en/components/priorite.md
+          - Souverix Vigile: en/components/vigile.md
+          - Souverix Federation: en/components/federation.md
+          - Souverix Gouverne: en/components/gouverne.md
+      - Compliance:
+          - STIR/SHAKEN: en/compliance/stir-shaken.md
+          - Lawful Intercept: en/compliance/lawful-intercept.md
+          - Emergency: en/compliance/emergency.md
+      - Testing:
+          - Test Catalog: en/testing/catalog.md
+          - PIXIT: en/testing/pixit.md
+          - KPI/SLO: en/testing/kpi-slo.md
+          - Certification: en/testing/certification.md
+      - Operations:
+          - Getting Started: en/operations/getting-started.md
+          - Configuration: en/operations/configuration.md
+          - Observability: en/operations/observability.md
+
+  - Français (QC):
+      - Aperçu: fr/index.md
+      - Plateforme:
+          - Doctrine: fr/plateforme/doctrine.md
+          - Composants: fr/plateforme/composants.md
+          - Nomenclature: fr/plateforme/nomenclature.md
+          - Structure du dépôt: fr/plateforme/depot.md
+      - Architecture:
+          - Hiérarchie: fr/architecture/hierarchie.md
+          - CNF OpenShift: fr/architecture/cnf.md
+          - Déploiement: fr/architecture/deploiement.md
+      - Composants:
+          - Souverix Coeur: fr/composants/coeur.md
+          - Souverix Rempart: fr/composants/rempart.md
+          - Souverix Relais: fr/composants/relais.md
+          - Souverix Autorite: fr/composants/autorite.md
+          - Souverix Vigie: fr/composants/vigie.md
+          - Souverix Mandat: fr/composants/mandat.md
+          - Souverix Priorite: fr/composants/priorite.md
+          - Souverix Vigile: fr/composants/vigile.md
+          - Souverix Federation: fr/composants/federation.md
+          - Souverix Gouverne: fr/composants/gouverne.md
+      - Conformité:
+          - STIR/SHAKEN: fr/conformite/stir-shaken.md
+          - Interception légale: fr/conformite/interception-legale.md
+          - Urgence: fr/conformite/urgence.md
+      - Tests:
+          - Catalogue de tests: fr/tests/catalogue.md
+          - Tests STIR/SHAKEN: fr/tests/stir-shaken-catalogue.md
+          - Tests LI/Urgence: fr/tests/li-urgence-catalogue.md
+          - PIXIT: fr/tests/pixit.md
+          - KPI/SLO: fr/tests/kpi-slo.md
+          - Certification: fr/tests/certification.md
+      - Opérations:
+          - Démarrage: fr/operations/demarrage.md
+          - Configuration: fr/operations/configuration.md
+          - Observabilité: fr/operations/observabilite.md
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/dasmlab/ims
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX  # Add your GA4 property ID if desired
