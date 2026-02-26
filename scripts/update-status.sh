@@ -5,8 +5,13 @@
 set -e
 
 REPO_OWNER="${GITHUB_REPOSITORY_OWNER:-dasmlab}"
-REPO_NAME="${GITHUB_REPOSITORY##*/}"
-REPO_NAME="${REPO_NAME:-ims}"
+if [ -n "${GITHUB_REPOSITORY}" ]; then
+    REPO_NAME="${GITHUB_REPOSITORY##*/}"
+else
+    # Fallback: try to get from git remote
+    REPO_NAME=$(git remote get-url origin 2>/dev/null | sed 's/.*\///;s/\.git$//' || echo "souverix")
+fi
+REPO_NAME="${REPO_NAME:-souverix}"
 
 # GitHub Actions badge URLs
 BUILD_BADGE="https://github.com/${REPO_OWNER}/${REPO_NAME}/workflows/Build/badge.svg"
