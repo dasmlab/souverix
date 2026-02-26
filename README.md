@@ -245,3 +245,4 @@ Set `ZERO_TRUST_MODE=true` to enable Zero Trust Architecture with integrated CA 
 ## License
 
 [Your License Here]
+---
