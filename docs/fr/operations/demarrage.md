@@ -75,7 +75,7 @@ oc apply -f k8s/
 
 - [Guide de Configuration](configuration.md)
 - [Aperçu de l'Architecture](../architecture/hierarchie.md)
-- [Documentation des Composants](../composants/coeur.md)
+- [Documentation des Composants](../plateforme/composants.md)
 
 ---
 
