@@ -39,8 +39,29 @@ if [ -f README.md ]; then
     # Remove old status section if exists
     sed -i '/^## Build Status$/,/^---$/d' README.md
     
-    # Insert new status section after title
-    sed -i "/^# IMS Core$/a\\n${STATUS_TABLE}" README.md
+    # Insert new status section after title using a temporary file
+    # This avoids sed escaping issues with multi-line variables
+    TMP_FILE=$(mktemp)
+    # Find the line with "# IMS Core" or "# Souverix" and insert after it
+    if grep -q "^# Souverix" README.md; then
+        TITLE_PATTERN="^# Souverix"
+    elif grep -q "^# IMS Core" README.md; then
+        TITLE_PATTERN="^# IMS Core"
+    else
+        TITLE_PATTERN="^#"
+    fi
+    
+    awk -v table="${STATUS_TABLE}" -v pattern="${TITLE_PATTERN}" '
+        BEGIN { inserted = 0 }
+        $0 ~ pattern && !inserted {
+            print $0
+            print ""
+            print table
+            inserted = 1
+            next
+        }
+        { print }
+    ' README.md > "${TMP_FILE}" && mv "${TMP_FILE}" README.md
     
     echo "✅ Updated README.md with build status badges"
 else
