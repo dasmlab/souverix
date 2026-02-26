@@ -18,7 +18,7 @@ Core Functions:
 - Policy Enforcement Hooks
 - Session State Control
 
-[Full Documentation](components/coeur.md)
+[Full Documentation](../components/coeur.md)
 
 ### 🛡 Souverix Rempart
 **Carrier / Military-Grade SIG-GW**
@@ -33,7 +33,7 @@ Functions:
 - STIR/SHAKEN enforcement
 - Peering policy control
 
-[Full Documentation](components/rempart.md)
+[Full Documentation](../components/rempart.md)
 
 ### 🎛 Souverix Relais
 **Media Relay Engine**
@@ -45,7 +45,7 @@ Functions:
 - QoS tagging
 - Media statistics
 
-[Full Documentation](components/relais.md)
+[Full Documentation](../components/relais.md)
 
 ### 🔐 Souverix Autorite
 **Cryptographic Sovereign Authority**
@@ -58,7 +58,7 @@ Functions:
 - mTLS enforcement
 - Automated rotation
 
-[Full Documentation](components/autorite.md)
+[Full Documentation](../components/autorite.md)
 
 ### 👁 Souverix Vigie
 **AI Intelligence Layer**
@@ -72,7 +72,7 @@ Functions:
 - Attack detection
 - Self-healing triggers
 
-[Full Documentation](components/vigie.md)
+[Full Documentation](../components/vigie.md)
 
 ### 🎯 Souverix Mandat
 **Lawful Intercept Orchestration**
@@ -84,7 +84,7 @@ Functions:
 - Intercept lifecycle management
 - Audit compliance tracking
 
-[Full Documentation](components/mandat.md)
+[Full Documentation](../components/mandat.md)
 
 ### 🚨 Souverix Priorite
 **Emergency & National Priority Services**
@@ -97,7 +97,7 @@ Functions:
 - Priority queuing
 - Disaster mode
 
-[Full Documentation](components/priorite.md)
+[Full Documentation](../components/priorite.md)
 
 ### 📊 Souverix Vigile
 **Observability & Compliance Telemetry**
@@ -110,7 +110,7 @@ Functions:
 - Regulatory reporting
 - SLO monitoring
 
-[Full Documentation](components/vigile.md)
+[Full Documentation](../components/vigile.md)
 
 ### 🌐 Souverix Federation
 **Inter-Domain Sovereign Peering Control**
@@ -121,7 +121,7 @@ Functions:
 - Peering policy orchestration
 - Multi-tenant domain isolation
 
-[Full Documentation](components/federation.md)
+[Full Documentation](../components/federation.md)
 
 ### ⚙ Souverix Gouverne
 **Policy & Configuration Control Plane**
@@ -134,7 +134,7 @@ Functions:
 - STIR mode control
 - Emergency override configuration
 
-[Full Documentation](components/gouverne.md)
+[Full Documentation](../components/gouverne.md)
 
 ---
 
