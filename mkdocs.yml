@@ -8,6 +8,19 @@ site_dir: site
 theme:
   name: material
   logo: assets/images/crest-orig-34x48.svg
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
     - navigation.tabs
     - navigation.sections
@@ -126,7 +139,9 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/dasmlab/ims
+      link: https://github.com/dasmlab/souverix
   analytics:
     provider: google
     property: G-XXXXXXXXXX  # Add your GA4 property ID if desired
+  css:
+    - assets/css/custom.css
