@@ -1,0 +1,138 @@
+---
+- name: Deploy IMS Core
+  hosts: ims_servers
+  become: yes
+  vars:
+    ims_version: "latest"
+    ims_image: "ghcr.io/dasmlab/ims-core:{{ ims_version }}"
+    ims_namespace: "ims-core"
+    zero_trust_mode: false
+
+  tasks:
+    - name: Ensure Kubernetes namespace exists
+      kubernetes.core.k8s:
+        name: "{{ ims_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Create ConfigMap
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: ims-core-config
+            namespace: "{{ ims_namespace }}"
+          data:
+            ims-domain: "ims.local"
+            log-level: "info"
+            enable-sbc: "true"
+            enable-hss: "true"
+            sbc-topology-hiding: "true"
+            sbc-dos-protection: "true"
+            zero-trust-mode: "{{ zero_trust_mode | lower }}"
+
+    - name: Deploy IMS Core
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ims-core
+            namespace: "{{ ims_namespace }}"
+            labels:
+              app: ims-core
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: ims-core
+            template:
+              metadata:
+                labels:
+                  app: ims-core
+              spec:
+                containers:
+                - name: ims-core
+                  image: "{{ ims_image }}"
+                  imagePullPolicy: Always
+                  ports:
+                  - name: sip-udp
+                    containerPort: 5060
+                    protocol: UDP
+                  - name: sip-tcp
+                    containerPort: 5060
+                    protocol: TCP
+                  - name: api
+                    containerPort: 8080
+                    protocol: TCP
+                  - name: metrics
+                    containerPort: 9443
+                    protocol: TCP
+                  envFrom:
+                  - configMapRef:
+                      name: ims-core-config
+                  resources:
+                    requests:
+                      memory: "256Mi"
+                      cpu: "100m"
+                    limits:
+                      memory: "512Mi"
+                      cpu: "500m"
+                  livenessProbe:
+                    httpGet:
+                      path: /health
+                      port: 8080
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                  readinessProbe:
+                    httpGet:
+                      path: /health
+                      port: 8080
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+
+    - name: Create Service
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: ims-core
+            namespace: "{{ ims_namespace }}"
+          spec:
+            type: ClusterIP
+            ports:
+            - name: sip-udp
+              port: 5060
+              targetPort: 5060
+              protocol: UDP
+            - name: sip-tcp
+              port: 5060
+              targetPort: 5060
+              protocol: TCP
+            - name: api
+              port: 8080
+              targetPort: 8080
+              protocol: TCP
+            - name: metrics
+              port: 9443
+              targetPort: 9443
+              protocol: TCP
+            selector:
+              app: ims-core
+
+    - name: Wait for deployment to be ready
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: ims-core
+        namespace: "{{ ims_namespace }}"
+      register: deployment
+      until: deployment.resources[0].status.readyReplicas == deployment.resources[0].spec.replicas
+      retries: 30
+      delay: 10

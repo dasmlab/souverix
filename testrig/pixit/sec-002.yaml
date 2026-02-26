@@ -1,0 +1,74 @@
+# PIXIT Configuration for SEC-002: Rate Limit INVITE Floods
+# Test: Flood triggers 503/429-style policy action
+
+pixit:
+  timers:
+    t1: 500ms
+    t2: 4s
+    timer_b: 32s
+    timer_f: 32s
+    session_timer: 1800s
+    max_dialogs: 50000
+    max_cps: 2000  # Legitimate max
+
+  codec:
+    audio: ["AMR-WB", "G.711"]
+    video: ["H.264"]
+    transcoding: false
+    srtp_required: true
+    dtmf_mode: "RFC2833"
+
+  tls:
+    version: ["1.2", "1.3"]
+    cipher_suites: ["ECDHE-ECDSA-AES256-GCM"]
+    mtls_required: true
+    cert_reload_mode: "hot"
+    ocsp_mode: "soft-fail"
+    stir_enforcement: "soft"
+
+  peer:
+    peer_id: "PEER-A"
+    transport: "SIP-TLS"
+    ip_version: "IPv4"
+    auth_mode: "mTLS"
+    stir_trust_level: "Trusted"
+    emergency_routing: true
+    li_cooperation: true
+    max_cps: 1000  # Peer max
+    topology_hiding_mode: "Full"
+
+  stir:
+    attestation_policy: "auto"
+    iat_skew: 60s
+    cert_cache_ttl: 24h
+    signing_key_source: "HSM"
+    re_sign_transit_calls: false
+    identity_header_max_size: 8192
+
+  li:
+    mode: "disabled"
+    mediation_ip: "10.1.1.10"
+    intercept_target_list: "dynamic"
+    overload_policy: "preserve"
+    audit_log_retention: 180
+    tls_decrypt_for_li: true
+
+  emergency:
+    numbers: ["911", "112"]
+    priority_queue: true
+    stir_override: true
+    fraud_override: true
+    emergency_route: "PSAP-A"
+    location_header_mandatory: true
+
+  chaos:
+    packet_loss: 0%
+    jitter: 0ms
+    dns_failure: false
+    tls_cert_expiry_sim: false
+    signing_service_crash: false
+    state_store_partition: false
+    media_relay_kill: false
+    # Test-specific: 20k CPS burst
+    burst_cps: 20000
+    rate_limit_threshold: 2500

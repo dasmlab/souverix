@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ims-core
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ims-core
+  namespace: ims-core
+  labels:
+    app: ims-core
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ims-core
+  template:
+    metadata:
+      labels:
+        app: ims-core
+    spec:
+      containers:
+      - name: ims-core
+        image: ghcr.io/dasmlab/ims-core:latest
+        imagePullPolicy: Always
+        ports:
+        - name: sip-udp
+          containerPort: 5060
+          protocol: UDP
+        - name: sip-tcp
+          containerPort: 5060
+          protocol: TCP
+        - name: sip-tls
+          containerPort: 5061
+          protocol: TCP
+        - name: api
+          containerPort: 8080
+          protocol: TCP
+        - name: metrics
+          containerPort: 9443
+          protocol: TCP
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        - name: IMS_DOMAIN
+          value: "ims.local"
+        - name: ENABLE_SBC
+          value: "true"
+        - name: ENABLE_HSS
+          value: "true"
+        - name: ZERO_TRUST_MODE
+          value: "false"
+        - name: SBC_TOPOLOGY_HIDING
+          value: "true"
+        - name: SBC_DOS_PROTECTION
+          value: "true"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ims-core
+  namespace: ims-core
+  labels:
+    app: ims-core
+spec:
+  type: ClusterIP
+  ports:
+  - name: sip-udp
+    port: 5060
+    targetPort: 5060
+    protocol: UDP
+  - name: sip-tcp
+    port: 5060
+    targetPort: 5060
+    protocol: TCP
+  - name: sip-tls
+    port: 5061
+    targetPort: 5061
+    protocol: TCP
+  - name: api
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  - name: metrics
+    port: 9443
+    targetPort: 9443
+    protocol: TCP
+  selector:
+    app: ims-core
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ims-core-headless
+  namespace: ims-core
+  labels:
+    app: ims-core
+spec:
+  clusterIP: None
+  ports:
+  - name: sip-udp
+    port: 5060
+    targetPort: 5060
+    protocol: UDP
+  - name: sip-tcp
+    port: 5060
+    targetPort: 5060
+    protocol: TCP
+  selector:
+    app: ims-core

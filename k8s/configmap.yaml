@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ims-core-config
+  namespace: ims-core
+data:
+  ims-domain: "ims.local"
+  log-level: "info"
+  enable-sbc: "true"
+  enable-hss: "true"
+  sbc-topology-hiding: "true"
+  sbc-dos-protection: "true"
+  zero-trust-mode: "false"
