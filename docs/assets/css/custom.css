@@ -1,6 +1,12 @@
 /* Custom CSS for Souverix logo sizing */
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
-    width: 35px;
-    height: 46px;
+    width: 120px;
+    height: auto;
+    max-height: 60px;
+}
+
+/* Ensure logo container has enough space */
+.md-header__button.md-logo {
+    padding: 0.4rem 0.8rem;
 }
