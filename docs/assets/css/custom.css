@@ -10,3 +10,190 @@
 .md-header__button.md-logo {
     padding: 0.4rem 0.8rem;
 }
+
+/* Banner styling with large crest logo */
+.md-header {
+    background: linear-gradient(135deg, #181442 0%, #115E94 100%);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Banner crest logo - big and proud */
+.md-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2rem;
+}
+
+.banner-crest {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.banner-crest-logo {
+    flex-shrink: 0;
+}
+
+.banner-crest-logo img,
+.banner-crest-logo svg {
+    width: 180px;
+    height: auto;
+    max-height: 120px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+.banner-crest-title {
+    flex: 1;
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 0.05em;
+}
+
+/* Bilingual boxes side by side */
+.bilingual-boxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+    .bilingual-boxes {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bilingual-box {
+    border: 2px solid #115E94;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    box-shadow: 0 2px 8px rgba(17, 94, 148, 0.1);
+}
+
+.bilingual-box h3 {
+    color: #181442;
+    margin-top: 0;
+    border-bottom: 2px solid #115E94;
+    padding-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.bilingual-box ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.bilingual-box ul li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.bilingual-box ul li:last-child {
+    border-bottom: none;
+}
+
+.bilingual-box a {
+    color: #115E94;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.bilingual-box a:hover {
+    color: #D61F26;
+    text-decoration: underline;
+}
+
+/* About section styling */
+.about-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 8px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border-left: 4px solid #115E94;
+}
+
+.about-section h2 {
+    color: #181442;
+    margin-top: 0;
+}
+
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.component-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.component-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(17, 94, 148, 0.15);
+}
+
+.component-item strong {
+    color: #181442;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* Documentation structure boxes */
+.doc-structure {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+    .doc-structure {
+        grid-template-columns: 1fr;
+    }
+}
+
+.doc-structure-box {
+    background: white;
+    border: 2px solid #115E94;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(17, 94, 148, 0.1);
+}
+
+.doc-structure-box h3 {
+    color: #181442;
+    margin-top: 0;
+    border-bottom: 2px solid #115E94;
+    padding-bottom: 0.5rem;
+}
+
+.doc-structure-box ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.doc-structure-box ul li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.doc-structure-box ul li:last-child {
+    border-bottom: none;
+}
+
+.doc-structure-box ul li strong {
+    color: #181442;
+}

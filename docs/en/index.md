@@ -1,87 +1,143 @@
 # Souverix Documentation
-## Sovereign Signaling Doctrine — IMS + SIG-GW
 
-Souverix is a **sovereign, AI-native signaling platform** engineered for **carrier and defense-grade** environments. Built in modern Golang, it is a clean architectural rewrite designed for **high CPS performance**, **secure interconnect control**, and **cryptographic sovereignty**.
+<div class="banner-crest">
+<div class="banner-crest-logo">
+![Souverix Crest](../assets/images/crest-orig-34x48.svg)
+</div>
+<div class="banner-crest-title">
+Souverix Platform
+</div>
+</div>
+
+---
+
+## About Souverix / À propos de Souverix
+
+<div class="about-section" markdown="1">
+
+### English
+
+**Souverix** is a **sovereign, AI-native signaling platform** engineered for **carrier and defense-grade** environments. Built in modern Golang, it is a clean architectural rewrite designed for **high CPS performance**, **secure interconnect control**, and **cryptographic sovereignty**.
 
 Souverix treats signaling as strategic infrastructure:
-
 - **Sovereign by design**: trust roots, policy, and interconnect control are first-class concerns.
 - **Resilient by default**: active/active patterns, failure isolation, and emergency continuity.
 - **Intelligent at the edge**: AI-assisted detection, classification, and adaptive enforcement.
 - **Regulation-ready**: STIR/SHAKEN, lawful intercept, emergency routing, and auditability.
 - **Cloud-native CNF**: built to run on Kubernetes/OpenShift with predictable operations.
 
----
+</div>
 
-## Platform Components
+<div class="about-section" markdown="1">
 
-### 🧠 Souverix Coeur — IMS Core
-Cloud-native IMS signaling core (X-CSCF stack) responsible for core session control and policy integration.
+### Français (QC)
 
-### 🛡 Souverix Rempart — SIG-GW / IBCF
-Carrier/military-grade border signaling gateway implementing interconnect control, topology hiding, SIP normalization, abuse mitigation, and STIR/SHAKEN enforcement.
+**Souverix** est une **plateforme de signalisation souveraine**, **nativement IA**, conçue pour des environnements **opérateurs** et **défense**. Développée en Golang moderne, Souverix est une réécriture architecturale propre visant la **performance CPS**, la **maîtrise des frontières d'interconnexion**, et la **souveraineté cryptographique**.
 
-### 🎛 Souverix Relais — Media Plane
-Media relay and anchoring layer for RTP/SRTP policy enforcement, NAT traversal, QoS handling, and media telemetry.
+Souverix traite la signalisation comme une infrastructure stratégique :
+- **Souveraineté par conception** : racines de confiance, politiques et contrôle d'interconnexion.
+- **Résilience par défaut** : modèles active/active, isolation des pannes, continuité d'urgence.
+- **Intelligence à la frontière** : détection IA, classification, et application adaptative.
+- **Prêt pour la conformité** : STIR/SHAKEN, interception légale, urgence, auditabilité.
+- **CNF natif** : conçu pour Kubernetes/OpenShift avec une exploitation prévisible.
 
-### 🔐 Souverix Autorite — PKI / HSM / Vault
-Sovereign cryptographic authority: CA chain management, certificate lifecycle automation, HSM integration, mTLS enforcement, and key rotation.
-
-### 👁 Souverix Vigie — AI Intelligence
-AI-driven intelligence layer for anomaly detection, fraud signals, adaptive policy, attack classification, and self-healing triggers.
-
-### 🎯 Souverix Mandat — Lawful Intercept
-Lawful intercept orchestration for signaling/media duplication, mediation integration, and audit-grade compliance tracking.
-
-### 🚨 Souverix Priorite — Emergency & Priority
-Emergency and national priority services: PSAP routing, priority queuing, override controls, and continuity under stress.
-
-### 📊 Souverix Vigile — Observability & Audit
-Metrics, logs, traces, compliance telemetry, and regulatory-grade audit reporting.
-
-### 🌐 Souverix Federation — Inter-domain Control
-Federation layer enabling controlled interoperability across sovereign domains: trust mapping, peering agreements, and multi-tenant interconnect policy.
-
-### ⚙ Souverix Gouverne — Policy Control Plane
-Policy and configuration authority: peer profiles, enforcement toggles, rate limits, runtime controls, emergency overrides, and warrant provisioning.
+</div>
 
 ---
 
-## Suggested Reading Path
+## Quick Links / Liens rapides
 
-1. **Platform → Overview / Components / Naming**
-2. **Architecture → Layers / OpenShift CNF**
-3. **Compliance → STIR/SHAKEN / Lawful Intercept / Emergency**
+<div class="bilingual-boxes">
+<div class="bilingual-box" markdown="1">
 
----
+### Français (QC)
 
-## Quick Links
+- [Vue d'ensemble de la plateforme](platform/doctrine.md)
+- [Architecture](architecture/hierarchy.md)
+- [Démarrage](operations/getting-started.md)
+- [Composants](platform/components.md)
+- [Conformité](compliance/stir-shaken.md)
+
+</div>
+
+<div class="bilingual-box" markdown="1">
+
+### English
 
 - [Platform Overview](platform/doctrine.md)
-- [Component Breakdown](platform/components.md)
-- [Naming & Namespace](platform/naming.md)
+- [Architecture](architecture/hierarchy.md)
 - [Getting Started](operations/getting-started.md)
-- [Architecture Hierarchy](architecture/hierarchy.md)
+- [Components](platform/components.md)
+- [Compliance](compliance/stir-shaken.md)
+
+</div>
+</div>
 
 ---
 
-## Doctrine Statement
+## Platform Components / Composantes de la plateforme
 
-Souverix does not merely implement IMS.
+<div class="component-grid" markdown="1">
 
-It establishes a modern doctrine of **sovereign signaling** — where **interconnect**, **trust**, **intelligence**, and **resilience** are first-class architectural concerns.
+- **🧠 Souverix Coeur** — IMS Core / Noyau IMS
+- **🛡 Souverix Rempart** — SIG-GW / IBCF
+- **🎛 Souverix Relais** — Media Plane / Plan média
+- **🔐 Souverix Autorite** — PKI / HSM / Vault
+- **👁 Souverix Vigie** — AI Intelligence / Intelligence IA
+- **🎯 Souverix Mandat** — Lawful Intercept / Interception légale
+- **🚨 Souverix Priorite** — Emergency Services / Services d'urgence
+- **📊 Souverix Vigile** — Observability / Observabilité
+- **🌐 Souverix Federation** — Inter-domain Control / Contrôle inter-domaines
+- **⚙ Souverix Gouverne** — Policy Control Plane / Plan de contrôle
 
-**Designed in Canada. Built for sovereign control.**
+</div>
 
 ---
 
-## Standards Compliance
+## Documentation Structure / Structure de la documentation
 
-- **3GPP**: TS 23.228, TS 24.229, TS 29.228, TS 33.107, TS 23.167
-- **IETF**: RFC 3261, RFC 8224, RFC 8225, RFC 8588, RFC 8555
-- **Regulatory**: FCC, CRTC, ETSI
+<div class="doc-structure">
+<div class="doc-structure-box" markdown="1">
+
+### Français (QC)
+
+- **Plateforme** — Doctrine, composants, nomenclature
+- **Architecture** — Architecture système, déploiement
+- **Composants** — Documentation des composants individuels
+- **Conformité** — STIR/SHAKEN, interception légale, urgence
+- **Tests** — Catalogues de tests, PIXIT, KPI/SLO
+- **Opérations** — Démarrage, configuration, observabilité
+
+</div>
+
+<div class="doc-structure-box" markdown="1">
+
+### English
+
+- **Platform** — Platform doctrine, components, naming
+- **Architecture** — System architecture, deployment
+- **Components** — Individual component documentation
+- **Compliance** — STIR/SHAKEN, Lawful Intercept, Emergency
+- **Testing** — Test catalogs, PIXIT, KPI/SLO
+- **Operations** — Getting started, configuration, observability
+
+</div>
+</div>
 
 ---
 
-## End of Documentation
-# Pages workflow test
+## Suggested Reading Path / Parcours de lecture suggéré
+
+1. **Platform → Overview / Components / Naming** / **Plateforme → Vue d'ensemble / Composants / Nomenclature**
+2. **Architecture → Layers / OpenShift CNF** / **Architecture → Couches / CNF OpenShift**
+3. **Compliance → STIR/SHAKEN / Lawful Intercept / Emergency** / **Conformité → STIR/SHAKEN / Interception légale / Urgence**
+
+---
+
+## Doctrine Statement / Énoncé de doctrine
+
+Souverix does not merely implement IMS. It establishes a modern doctrine of **sovereign signaling** — where **interconnect**, **trust**, **intelligence**, and **resilience** are first-class architectural concerns.
+
+Souverix ne fait pas qu'implémenter l'IMS. Il établit une doctrine moderne de **signalisation souveraine** — où l'**interconnexion**, la **confiance**, l'**intelligence**, et la **résilience** sont des préoccupations architecturales de premier plan.
+
+Designed in Canada. Built for sovereign control. / Conçu au Canada. Construit pour le contrôle souverain.
