@@ -22,6 +22,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Update README badges
+      working-directory: souverix
       run: |
         chmod +x scripts/update-status.sh
         ./scripts/update-status.sh
