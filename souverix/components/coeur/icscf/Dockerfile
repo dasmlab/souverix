@@ -1,5 +1,5 @@
 # Multi-stage build for Souverix icscf subcomponent
-FROM golang:1.23-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
