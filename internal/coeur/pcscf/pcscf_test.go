@@ -10,13 +10,13 @@ import (
 
 func TestNewPCSCF(t *testing.T) {
 	cfg := &Config{
-		SIPAddr:    ":5060",
-		SIPTLSAddr: ":5061",
-		ICSCFAddr:  "icscf.ims.local:5060",
-		SCSCFAddr:  "scscf.ims.local:5060",
-		DoSProtection:   true,
-		RateLimitPerIP:  100,
-		RateLimitWindow: 60 * time.Second,
+		SIPAddr:          ":5060",
+		SIPTLSAddr:       ":5061",
+		ICSCFAddr:        "icscf.ims.local:5060",
+		SCSCFAddr:        "scscf.ims.local:5060",
+		DoSProtection:    true,
+		RateLimitPerIP:   100,
+		RateLimitWindow:  60 * time.Second,
 		EmergencyNumbers: []string{"911", "112", "999"},
 	}
 
@@ -35,12 +35,12 @@ func TestNewPCSCF(t *testing.T) {
 
 func TestPCSCFStartStop(t *testing.T) {
 	cfg := &Config{
-		SIPAddr:    ":0", // Use port 0 for testing (OS assigns available port)
-		SIPTLSAddr: ":0",
-		ICSCFAddr:  "icscf.ims.local:5060",
-		DoSProtection:   false, // Disable for faster tests
-		RateLimitPerIP:  100,
-		RateLimitWindow: 60 * time.Second,
+		SIPAddr:          ":0", // Use port 0 for testing (OS assigns available port)
+		SIPTLSAddr:       ":0",
+		ICSCFAddr:        "icscf.ims.local:5060",
+		DoSProtection:    false, // Disable for faster tests
+		RateLimitPerIP:   100,
+		RateLimitWindow:  60 * time.Second,
 		EmergencyNumbers: []string{"911"},
 	}
 

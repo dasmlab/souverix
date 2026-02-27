@@ -27,7 +27,7 @@ type Message struct {
 	Body string
 
 	// Transport info
-	Transport string // "udp", "tcp", "tls"
+	Transport  string // "udp", "tcp", "tls"
 	RemoteAddr string
 }
 
@@ -103,72 +103,72 @@ func (m *Message) String() string {
 
 // Common SIP methods
 const (
-	MethodINVITE   = "INVITE"
-	MethodACK      = "ACK"
-	MethodBYE      = "BYE"
-	MethodCANCEL   = "CANCEL"
-	MethodOPTIONS  = "OPTIONS"
-	MethodREGISTER = "REGISTER"
-	MethodINFO     = "INFO"
-	MethodUPDATE   = "UPDATE"
-	MethodPRACK    = "PRACK"
-	MethodREFER    = "REFER"
-	MethodNOTIFY   = "NOTIFY"
+	MethodINVITE    = "INVITE"
+	MethodACK       = "ACK"
+	MethodBYE       = "BYE"
+	MethodCANCEL    = "CANCEL"
+	MethodOPTIONS   = "OPTIONS"
+	MethodREGISTER  = "REGISTER"
+	MethodINFO      = "INFO"
+	MethodUPDATE    = "UPDATE"
+	MethodPRACK     = "PRACK"
+	MethodREFER     = "REFER"
+	MethodNOTIFY    = "NOTIFY"
 	MethodSUBSCRIBE = "SUBSCRIBE"
 )
 
 // Common SIP status codes
 const (
-	StatusTrying                = 100
-	StatusRinging               = 180
-	StatusCallIsBeingForwarded  = 181
-	StatusQueued                = 182
-	StatusSessionProgress       = 183
-	StatusOK                    = 200
-	StatusAccepted              = 202
-	StatusMultipleChoices       = 300
-	StatusMovedPermanently      = 301
-	StatusMovedTemporarily      = 302
-	StatusUseProxy              = 305
-	StatusAlternativeService    = 380
-	StatusBadRequest            = 400
-	StatusUnauthorized          = 401
-	StatusPaymentRequired       = 402
-	StatusForbidden             = 403
-	StatusNotFound              = 404
-	StatusMethodNotAllowed      = 405
-	StatusNotAcceptable         = 406
-	StatusProxyAuthRequired     = 407
-	StatusRequestTimeout        = 408
-	StatusGone                  = 410
-	StatusRequestEntityTooLarge = 413
-	StatusRequestURITooLong     = 414
-	StatusUnsupportedMediaType  = 415
-	StatusUnsupportedURIScheme  = 416
-	StatusBadExtension          = 420
-	StatusExtensionRequired     = 421
-	StatusIntervalTooBrief      = 423
-	StatusTemporarilyUnavailable = 480
+	StatusTrying                         = 100
+	StatusRinging                        = 180
+	StatusCallIsBeingForwarded           = 181
+	StatusQueued                         = 182
+	StatusSessionProgress                = 183
+	StatusOK                             = 200
+	StatusAccepted                       = 202
+	StatusMultipleChoices                = 300
+	StatusMovedPermanently               = 301
+	StatusMovedTemporarily               = 302
+	StatusUseProxy                       = 305
+	StatusAlternativeService             = 380
+	StatusBadRequest                     = 400
+	StatusUnauthorized                   = 401
+	StatusPaymentRequired                = 402
+	StatusForbidden                      = 403
+	StatusNotFound                       = 404
+	StatusMethodNotAllowed               = 405
+	StatusNotAcceptable                  = 406
+	StatusProxyAuthRequired              = 407
+	StatusRequestTimeout                 = 408
+	StatusGone                           = 410
+	StatusRequestEntityTooLarge          = 413
+	StatusRequestURITooLong              = 414
+	StatusUnsupportedMediaType           = 415
+	StatusUnsupportedURIScheme           = 416
+	StatusBadExtension                   = 420
+	StatusExtensionRequired              = 421
+	StatusIntervalTooBrief               = 423
+	StatusTemporarilyUnavailable         = 480
 	StatusCallLegTransactionDoesNotExist = 481
-	StatusLoopDetected          = 482
-	StatusTooManyHops           = 483
-	StatusAddressIncomplete     = 484
-	StatusAmbiguous             = 485
-	StatusBusyHere              = 486
-	StatusRequestTerminated     = 487
-	StatusNotAcceptableHere     = 488
-	StatusBadEvent              = 489
-	StatusRequestPending        = 491
-	StatusUndecipherable        = 493
-	StatusInternalServerError   = 500
-	StatusNotImplemented        = 501
-	StatusBadGateway            = 502
-	StatusServiceUnavailable    = 503
-	StatusServerTimeout         = 504
-	StatusVersionNotSupported   = 505
-	StatusMessageTooLarge       = 513
-	StatusBusyEverywhere        = 600
-	StatusDecline               = 603
-	StatusDoesNotExistAnywhere   = 604
-	StatusNotAcceptableGlobally  = 606
+	StatusLoopDetected                   = 482
+	StatusTooManyHops                    = 483
+	StatusAddressIncomplete              = 484
+	StatusAmbiguous                      = 485
+	StatusBusyHere                       = 486
+	StatusRequestTerminated              = 487
+	StatusNotAcceptableHere              = 488
+	StatusBadEvent                       = 489
+	StatusRequestPending                 = 491
+	StatusUndecipherable                 = 493
+	StatusInternalServerError            = 500
+	StatusNotImplemented                 = 501
+	StatusBadGateway                     = 502
+	StatusServiceUnavailable             = 503
+	StatusServerTimeout                  = 504
+	StatusVersionNotSupported            = 505
+	StatusMessageTooLarge                = 513
+	StatusBusyEverywhere                 = 600
+	StatusDecline                        = 603
+	StatusDoesNotExistAnywhere           = 604
+	StatusNotAcceptableGlobally          = 606
 )

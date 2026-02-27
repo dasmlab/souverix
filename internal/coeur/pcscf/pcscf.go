@@ -4,8 +4,6 @@
 //
 // CI/CD Pipeline: Build → Unit Test (Diagnostic API) → Publish → System Test → Stable
 // See docs/DESIGN_PHILOSOPHY.md for SDLC methodology
-//
-// 🚀 Triggering CI/CD pipeline test run
 package pcscf
 
 import (
@@ -93,13 +91,13 @@ type PCSCF struct {
 
 // Session represents an active SIP session
 type Session struct {
-	CallID      string
-	From        string
-	To          string
-	Contact     string
-	RemoteAddr  string
-	Transport   string
-	CreatedAt   time.Time
+	CallID       string
+	From         string
+	To           string
+	Contact      string
+	RemoteAddr   string
+	Transport    string
+	CreatedAt    time.Time
 	LastActivity time.Time
 }
 
@@ -109,14 +107,14 @@ type MessageHandler func(*sip.Message, *Session) (*sip.Message, error)
 // New creates a new P-CSCF instance.
 func New(cfg *Config, log *logrus.Logger) *PCSCF {
 	pcscf := &PCSCF{
-		BaseNode:  node.NewBaseNode("pcscf"),
-		config:    cfg,
-		log:       log,
+		BaseNode:   node.NewBaseNode("pcscf"),
+		config:     cfg,
+		log:        log,
 		natMapping: make(map[string]string),
-		sessions:  make(map[string]*Session),
-		handlers:  make(map[string]MessageHandler),
-		parser:    sip.NewParser(),
-		shutdown:  make(chan struct{}),
+		sessions:   make(map[string]*Session),
+		handlers:   make(map[string]MessageHandler),
+		parser:     sip.NewParser(),
+		shutdown:   make(chan struct{}),
 	}
 
 	// Initialize rate limiter if DoS protection is enabled
@@ -173,13 +171,13 @@ func (p *PCSCF) Start(ctx context.Context) error {
 	}
 
 	p.BaseNode.SetHealth("healthy", map[string]interface{}{
-		"started":      true,
-		"sip_udp":      p.config.SIPAddr,
-		"sip_tcp":      p.config.SIPAddr,
-		"sip_tls":      p.config.SIPTLSAddr,
-		"nat_enabled":  p.config.EnableNATTraversal,
-		"compression":  p.config.EnableCompression,
-		"diagnostics":  diagEnabled,
+		"started":     true,
+		"sip_udp":     p.config.SIPAddr,
+		"sip_tcp":     p.config.SIPAddr,
+		"sip_tls":     p.config.SIPTLSAddr,
+		"nat_enabled": p.config.EnableNATTraversal,
+		"compression": p.config.EnableCompression,
+		"diagnostics": diagEnabled,
 	})
 
 	p.log.Info("P-CSCF started")
@@ -743,10 +741,7 @@ func (p *PCSCF) getPCSCFAddress() string {
 	}
 	// Extract host from SIP address
 	host, _, err := net.SplitHostPort(p.config.SIPAddr)
-	if err != nil {
-		return "pcscf.ims.local"
-	}
-	if host == "" || host == "0.0.0.0" {
+	if err != nil || host == "" || host == "0.0.0.0" {
 		return "pcscf.ims.local"
 	}
 	return host
@@ -793,7 +788,10 @@ func (p *PCSCF) createErrorResponse(msg *sip.Message, code int, text string) *si
 // generateBranch generates a SIP branch parameter
 func generateBranch() string {
 	b := make([]byte, 8)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		// Fallback to timestamp-based branch if crypto/rand fails
+		return hex.EncodeToString([]byte(fmt.Sprintf("%d", time.Now().UnixNano())))
+	}
 	return hex.EncodeToString(b)
 }
 

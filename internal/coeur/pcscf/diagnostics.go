@@ -108,7 +108,7 @@ func (d *DiagnosticServer) handleStatus(c *gin.Context) {
 		"health":  health,
 		"metrics": metrics,
 		"config": map[string]interface{}{
-			"sip_addr":    d.pcscf.config.SIPAddr,
+			"sip_addr":     d.pcscf.config.SIPAddr,
 			"sip_tls_addr": d.pcscf.config.SIPTLSAddr,
 			"icscf_addr":   d.pcscf.config.ICSCFAddr,
 			"scscf_addr":   d.pcscf.config.SCSCFAddr,
@@ -138,11 +138,11 @@ func (d *DiagnosticServer) handleMetrics(c *gin.Context) {
 
 // TestResult represents a test result
 type TestResult struct {
-	TestName   string    `json:"test_name"`
-	Status     string    `json:"status"` // "pass", "fail", "skip"
-	Message    string    `json:"message,omitempty"`
-	Duration   string    `json:"duration,omitempty"`
-	Timestamp  time.Time `json:"timestamp"`
+	TestName  string    `json:"test_name"`
+	Status    string    `json:"status"` // "pass", "fail", "skip"
+	Message   string    `json:"message,omitempty"`
+	Duration  string    `json:"duration,omitempty"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 // handleRunTests runs unit tests via diagnostic API
@@ -220,13 +220,13 @@ func (d *DiagnosticServer) handleRunTests(c *gin.Context) {
 	}
 
 	response := map[string]interface{}{
-		"status":        overallStatus,
-		"total_tests":   len(results),
-		"passed":        len(results),
-		"failed":        0,
-		"duration":      totalDuration.String(),
-		"test_results":  results,
-		"timestamp":     time.Now(),
+		"status":       overallStatus,
+		"total_tests":  len(results),
+		"passed":       len(results),
+		"failed":       0,
+		"duration":     totalDuration.String(),
+		"test_results": results,
+		"timestamp":    time.Now(),
 	}
 
 	// Count failures
