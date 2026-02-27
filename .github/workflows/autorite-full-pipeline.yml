@@ -3,13 +3,13 @@ name: Souverix Autorite Full Pipeline (Build → Test → Publish → System Tes
 on:
   push:
     paths:
-      - 'souverix/internal/autorite/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/autorite/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/autorite-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/autorite/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/autorite/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/autorite-full-pipeline.yml'
   workflow_dispatch:
 

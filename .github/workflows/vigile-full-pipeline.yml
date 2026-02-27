@@ -3,13 +3,13 @@ name: Souverix Vigile Full Pipeline (Build → Test → Publish → System Test 
 on:
   push:
     paths:
-      - 'souverix/internal/vigile/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/vigile/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/vigile-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/vigile/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/vigile/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/vigile-full-pipeline.yml'
   workflow_dispatch:
 

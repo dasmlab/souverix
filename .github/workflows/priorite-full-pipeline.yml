@@ -3,13 +3,13 @@ name: Souverix Priorite Full Pipeline (Build → Test → Publish → System Tes
 on:
   push:
     paths:
-      - 'souverix/internal/priorite/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/priorite/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/priorite-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/priorite/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/priorite/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/priorite-full-pipeline.yml'
   workflow_dispatch:
 

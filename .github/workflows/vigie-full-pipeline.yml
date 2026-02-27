@@ -3,13 +3,13 @@ name: Souverix Vigie Full Pipeline (Build → Test → Publish → System Test �
 on:
   push:
     paths:
-      - 'souverix/internal/vigie/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/vigie/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/vigie-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/vigie/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/vigie/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/vigie-full-pipeline.yml'
   workflow_dispatch:
 

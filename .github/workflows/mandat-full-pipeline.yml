@@ -3,13 +3,13 @@ name: Souverix Mandat Full Pipeline (Build → Test → Publish → System Test 
 on:
   push:
     paths:
-      - 'souverix/internal/mandat/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/mandat/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/mandat-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/mandat/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/mandat/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/mandat-full-pipeline.yml'
   workflow_dispatch:
 

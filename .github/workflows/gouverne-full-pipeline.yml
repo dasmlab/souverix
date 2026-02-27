@@ -3,13 +3,13 @@ name: Souverix Gouverne Full Pipeline (Build → Test → Publish → System Tes
 on:
   push:
     paths:
-      - 'souverix/internal/gouverne/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/gouverne/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/gouverne-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/gouverne/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/gouverne/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/gouverne-full-pipeline.yml'
   workflow_dispatch:
 

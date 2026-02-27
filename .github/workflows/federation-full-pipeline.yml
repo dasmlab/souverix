@@ -3,13 +3,13 @@ name: Souverix Federation Full Pipeline (Build → Test → Publish → System T
 on:
   push:
     paths:
-      - 'souverix/internal/federation/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/federation/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/federation-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/federation/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/federation/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/federation-full-pipeline.yml'
   workflow_dispatch:
 

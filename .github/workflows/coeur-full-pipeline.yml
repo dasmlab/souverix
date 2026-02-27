@@ -3,13 +3,13 @@ name: Souverix Coeur Full Pipeline (Build → Test → Publish → System Test �
 on:
   push:
     paths:
-      - 'souverix/internal/coeur/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/coeur/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/coeur-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/coeur/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/coeur/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/coeur-full-pipeline.yml'
   workflow_dispatch:
 

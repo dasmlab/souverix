@@ -3,13 +3,13 @@ name: Souverix Rempart Full Pipeline (Build → Test → Publish → System Test
 on:
   push:
     paths:
-      - 'souverix/internal/rempart/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/rempart/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/rempart-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/rempart/**'
-      - 'souverix/internal/common/**'
+      - 'souverix/components/rempart/**'
+      - 'souverix/components/common/**'
       - '.github/workflows/rempart-full-pipeline.yml'
   workflow_dispatch:
 
