@@ -2,11 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
-	"path/filepath"
-	"os"
-	"os/exec"
 )
 
 func main() {
@@ -18,15 +14,6 @@ func main() {
 	fmt.Println("  UE -> P-CSCF -> I-CSCF -> S-CSCF -> BGCF -> MGCF -> PSTN")
 	fmt.Println()
 	
-	// Get the souverix root directory
-	souverixRoot := filepath.Join(filepath.Dir(os.Args[0]), "../..")
-	if _, err := os.Stat(filepath.Join(souverixRoot, "go.mod")); err != nil {
-		// Try alternative path
-		souverixRoot = "/home/dasm/org-dasmlab/ims/souverix"
-	}
-	
-	fmt.Printf("Souverix root: %s\n", souverixRoot)
-	fmt.Println()
 	
 	// Test 1: IMS-to-IMS call
 	fmt.Println("Test 1: IMS-to-IMS Call Flow")
