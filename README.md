@@ -4,12 +4,12 @@
 
 | Component | Code Name | Build Pipeline |
 |-----------|-----------|----------------|
-| **Souverix Coeur** | IMS Core (P-CSCF, I-CSCF, S-CSCF, BGCF, MGCF, HSS) | [![Souverix Coeur Full Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Coeur%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/coeur-full-pipeline.yml) |
-| **Souverix Rempart** | SIG-GW / IBCF / Border Control | [![Souverix Rempart Full Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Rempart%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/rempart-full-pipeline.yml) |
+| **Souverix Coeur** | IMS Core (P-CSCF, I-CSCF, S-CSCF, BGCF, MGCF, HSS) | [![Souverix Coeur Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/coeur-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/coeur-full-pipeline.yml) |
+| **Souverix Rempart** | SIG-GW / IBCF / Border Control | [![Souverix Rempart Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/rempart-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/rempart-full-pipeline.yml) |
 | **STIR/SHAKEN** | Souverix Rempart (STIR/SHAKEN enforcement) | *Part of Rempart* |
-| **Souverix Mandat** | Lawful Intercept | [![Souverix Mandat Full Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Mandat%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/mandat-full-pipeline.yml) |
+| **Souverix Mandat** | Lawful Intercept | [![Souverix Mandat Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/mandat-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/mandat-full-pipeline.yml) |
 | **LI** | Souverix Mandat (Lawful Intercept) | *Part of Mandat* |
-| **Souverix Priorite** | Emergency & Priority Services | [![Souverix Priorite Full Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Priorite%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/priorite-full-pipeline.yml) |
+| **Souverix Priorite** | Emergency & Priority Services | [![Souverix Priorite Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/priorite-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/priorite-full-pipeline.yml) |
 | **Souverix Relais** | Media Relay Engine (RTP proxy, SRTP, NAT traversal) | *Coming soon* |
 | **Souverix Autorite** | PKI / HSM / Vault (Cryptographic authority) | *Coming soon* |
 | **Souverix Vigie** | AI Intelligence Engine | *Coming soon* |
