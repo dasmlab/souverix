@@ -1,182 +1,97 @@
-# IMS Core Architecture
+# Souverix Architecture
 
-## Overview
+## Access-Agnostic Architecture
 
-This document describes the architecture of the IMS Core implementation, a cloud-native IP Multimedia Subsystem built with Go.
+Souverix is designed with a **winning abstraction** that keeps the IMS core access-agnostic while supporting multiple access technologies through adapter layers.
 
-## Component Architecture
+### Core Architecture
 
-### Core IMS Components
+Build Souverix as:
 
-#### P-CSCF (Proxy CSCF)
-- **Status**: Scaffolded (ready for implementation)
-- **Role**: First contact point for User Equipment (UE)
-- **Responsibilities**:
-  - SIP message forwarding
-  - Security enforcement
-  - NAT traversal
-  - Compression/decompression
+1. **IMS Control Plane Core**
+   - P/I/S-CSCF, BGCF, MGCF control, HSS/UDM integration
+   - Access-agnostic IMS signaling and service logic
+   - Standard 3GPP IMS interfaces and behaviors
 
-#### I-CSCF (Interrogating CSCF)
-- **Status**: Scaffolded (ready for implementation)
-- **Role**: Inter-domain routing and HSS query
-- **Responsibilities**:
-  - HSS query for S-CSCF assignment
-  - Inter-domain routing
-  - Topology hiding at domain boundary
+2. **Access & Policy Adapter Layer**
+   - LTE/EPC, Wi-Fi/ePDG, 5GC, fixed/enterprise, private networks
+   - Policy integration (PCRF, PCF, enterprise policies)
+   - Access-specific handling without core changes
 
-#### S-CSCF (Serving CSCF)
-- **Status**: Scaffolded (ready for implementation)
-- **Role**: Core session control and service logic
-- **Responsibilities**:
-  - Session establishment and management
-  - Service profile execution
-  - Application Server routing
-  - Registration handling
+3. **Interconnect Edge**
+   - IBCF/SBC adjacency patterns, topology, compliance
+   - Inter-domain and inter-network connectivity
+   - Security and policy enforcement at network boundaries
 
-#### HSS/UDM (Home Subscriber Server / Unified Data Management)
-- **Status**: ✅ Implemented (in-memory store)
-- **Role**: Subscriber database
-- **Responsibilities**:
-  - Subscriber profile storage
-  - Authentication data
-  - Service profile management
-  - S-CSCF assignment
-  - Registration state
+**That keeps you "access-agnostic" and makes "new RAN types" mostly an adapter problem, not a core rewrite.**
 
-#### SBC/IBCF (Session Border Controller / Interconnection Border Control Function)
-- **Status**: ✅ Implemented (Priority Component)
-- **Role**: SIP Gateway and security boundary
-- **Responsibilities**:
-  - SIP normalization
-  - Topology hiding
-  - Security enforcement (DoS protection, rate limiting)
-  - Inter-operator SIP peering
-  - Enterprise SIP trunking
-  - PBX to IMS interworking
-  - Fixed Broadband voice to IMS
+## Access Attachment Contract
 
-#### IBCF (Interconnection Border Control Function)
-- **Status**: ✅ Implemented (3GPP TS 23.228 Compliant)
-- **Role**: Standardized border control between IMS networks
-- **Responsibilities**:
-  - SIP signaling control (Mw/Mx reference points)
-  - Topology hiding (3GPP standardized)
-  - Security enforcement (TLS, DoS, policy)
-  - Inter-operator peering control
-  - STIR/SHAKEN integration
-  - Message validation and enforcement
+All access implementations must conform to the **Access Attachment Contract** which defines standardized expectations for:
 
-#### MGCF/BGCF
-- **Status**: Scaffolded (future implementation)
-- **Role**: PSTN interworking
-- **Responsibilities**:
-  - SIP to ISUP conversion
-  - TDM interworking
-  - Breakout gateway control
+### Registration Lifecycle Expectations
 
-## SIP Gateway Capabilities
+- **Timers**: Registration refresh intervals, timeout values
+- **Keepalives**: NAT keepalive mechanisms, frequency
+- **NAT**: NAT traversal requirements, binding maintenance
+- **Re-registration**: Re-registration triggers and patterns
 
-### Access SIP Gateway
-- Enterprise SIP trunk termination
-- PBX to IMS interworking
-- Fixed Broadband voice to IMS
+### Security Association Expectations
 
-### IBCF/SBC Functions
-- **Topology Hiding**: Removes internal network topology from SIP messages
-- **SIP Normalization**: Standardizes SIP headers and formats
-- **Security**:
-  - Rate limiting per IP
-  - DoS protection
-  - TLS/SRTP support (planned)
-- **Inter-operator Peering**: Secure SIP peering between carriers
+- **IPsec/TLS**: Security protocol requirements
+- **Association Lifecycle**: Establishment, maintenance, rekeying
+- **Security Policies**: Trusted vs untrusted access handling
+- **Certificate Management**: Certificate validation and renewal
 
-### PSTN Gateway (Future)
-- ISUP support
-- TDM interworking
-- Legacy switching support
+### Policy Triggers
 
-## Zero Trust Architecture
+- **Generic "Policy Events" Interface**: Standardized policy event model
+- **QoS Authorization**: Media authorization requests
+- **Charging Triggers**: Charging event generation
+- **Service Policies**: Service-specific policy enforcement
 
-### Configuration
-Zero Trust Mode is enabled via `ZERO_TRUST_MODE=true` environment variable.
+## Implementation Profiles
 
-### CA Providers
-1. **Internal CA**: Self-signed CA for development/testing
-2. **Vault CA**: HashiCorp Vault PKI integration (planned)
-3. **ACME CA**: Let's Encrypt and other ACME providers (planned)
+See [Implementation Profiles](./impl-profiles/README.md) for detailed profiles:
 
-### Certificate Management
-- Automatic certificate generation
-- Certificate rotation
-- Mutual TLS support
+- [VoLTE](./impl-profiles/volte.md) - IMS over LTE/EPC
+- [VoWiFi](./impl-profiles/vowifi.md) - EPC/ePDG flavor
+- [IMS over 5GC](./impl-profiles/ims-over-5gc.md) - VoNR
+- [Fixed IMS](./impl-profiles/fixed-ims.md) - FTTH/DSL/Enterprise
 
-## Data Flow
+## Future Implementations
 
-### Registration Flow
-```
-UE → P-CSCF → I-CSCF → HSS → S-CSCF → UE
-```
+### Private LTE / Private 5G (Industrial/Campus)
 
-### Call Flow (Intra-domain)
-```
-UE → P-CSCF → S-CSCF → Application Server → S-CSCF → P-CSCF → UE
-```
+- Same IMS patterns, but different trust boundaries + orchestration
+- Private network identity and policy models
+- Campus/enterprise-specific requirements
 
-### Call Flow (Inter-domain via SBC)
-```
-UE → P-CSCF → S-CSCF → SBC/IBCF → External Network
-```
+### Non-Terrestrial Networks (NTN)
 
-## Technology Stack
+- Latency/jitter constraints push survivability and timing behaviors
+- Intermittent connectivity handling
+- Extended delay tolerance
 
-### Backend
-- **Language**: Go 1.23
-- **Web Framework**: Gin
-- **Logging**: Logrus
-- **Metrics**: Prometheus
-- **Tracing**: OpenTelemetry
+### Mission-Critical Services (Public Safety / High Assurance)
 
-### Frontend
-- **Framework**: Quasar (Vue 3)
-- **Build Tool**: Vite
-- **Purpose**: Fleet management and monitoring
+- Availability, deterministic behavior, auditability
+- Zero-trust boundaries
+- Enhanced resilience and redundancy
 
-### Deployment
-- **Container Runtime**: Docker/Podman
-- **Orchestration**: Kubernetes
-- **Automation**: Ansible
+## Defense / High-Assurance Posture
 
-## Security Features
+In defense and high-assurance environments, the differentiators are usually:
 
-1. **Rate Limiting**: Per-IP rate limiting to prevent DoS
-2. **Topology Hiding**: Removes internal network information
-3. **TLS Support**: SIP over TLS (planned)
-4. **SRTP Support**: Secure RTP (planned)
-5. **Zero Trust**: Configurable Zero Trust Architecture
-6. **STIR/SHAKEN**: Caller identity authentication with ACME-based certificate management
-7. **Fraud Detection**: AI agent hooks for fraud analytics
+- **Zero-trust boundaries**: Explicit trust zones, stricter identity, strong crypto posture
+- **Auditable control plane**: Traceability, deterministic behavior, provenance of config
+- **Resilience under constrained links**: NTN-ish behavior, intermittent connectivity
+- **Interop conventions**: More gateways, more strict peering rules
 
-## Scalability
+**So: invest early in strong interface contracts + policy adapters + observability + config provenance.**
 
-- **Horizontal Scaling**: Stateless components can scale horizontally
-- **Session State**: Currently in-memory (can be moved to Redis/etcd)
-- **Load Balancing**: Kubernetes service load balancing
+## Related Documentation
 
-## Monitoring and Observability
-
-- **Metrics**: Prometheus metrics exposed on `/metrics`
-- **Tracing**: OpenTelemetry distributed tracing
-- **Logging**: Structured JSON logging with Logrus
-- **Health Checks**: `/health` endpoint for liveness/readiness
-
-## Future Enhancements
-
-1. **Diameter Protocol**: Full Diameter Cx/Dx/Sh interfaces
-2. **PSTN Gateway**: Complete ISUP/TDM support
-3. **AI Agent Integration**: MCP and extensibility hooks (✅ hooks implemented)
-4. **Persistent Storage**: PostgreSQL/Redis for HSS
-5. **STIR/SHAKEN**: Call authentication (✅ implemented with ACME)
-6. **5G Integration**: NRF, NEF integration
-7. **Full ACME Client**: Complete RFC 8555 implementation
-8. **HSM Integration**: Hardware security module support
+- [Component Flows](./flows/README.md)
+- [Component Features](../components/coeur/)
+- [6G Standards Watchlist](./standards/6g/README.md)
