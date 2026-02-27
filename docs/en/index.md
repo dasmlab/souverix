@@ -1,8 +1,8 @@
 # Souverix Documentation
 
-<div class="banner-crest">
+<div class="banner-crest" markdown="1">
 <div class="banner-crest-logo">
-![Souverix Crest](../assets/images/crest-orig-34x48.svg)
+<img src="../assets/images/crest-orig-34x48.svg" alt="Souverix Crest" />
 </div>
 <div class="banner-crest-title">
 Souverix Platform

@@ -19,38 +19,47 @@
 
 /* Banner crest in content area - big and proud */
 .banner-crest {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 2rem;
     width: 100%;
     max-width: 1200px;
     margin: 2rem auto;
     padding: 2rem;
-    background: linear-gradient(135deg, #181442 0%, #115E94 100%);
+    background: linear-gradient(135deg, #181442 0%, #115E94 100%) !important;
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    overflow: hidden;
 }
 
 .banner-crest-logo {
     flex-shrink: 0;
 }
 
+.banner-crest-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .banner-crest-logo img,
 .banner-crest-logo svg {
-    width: 200px;
+    width: 200px !important;
     height: auto;
     max-height: 150px;
     filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    display: block;
 }
 
 .banner-crest-title {
     flex: 1;
-    color: white;
+    color: white !important;
     font-size: 3rem;
     font-weight: 700;
     text-shadow: 0 2px 8px rgba(0,0,0,0.4);
     letter-spacing: 0.05em;
     margin: 0;
+    line-height: 1.2;
 }
 
 @media (max-width: 768px) {
