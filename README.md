@@ -4,16 +4,15 @@
 
 | Component | Build | Tests | Coverage | Lint |
 |-----------|-------|-------|----------|------|
-| **IMS Core** | [![Build](https://github.com/dasmlab/souverix/workflows/Build/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/souverix/workflows/Test/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/test.yml) | [![Coverage](https://codecov.io/gh/dasmlab/souverix/branch/main/graph/badge.svg)](https://codecov.io/gh/dasmlab/souverix) | [![Lint](https://github.com/dasmlab/souverix/workflows/Lint/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/lint.yml) |
-| **IBCF/SIG-GW** | [![Build](https://github.com/dasmlab/souverix/workflows/Build/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/souverix/workflows/Test/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/test.yml) | - | - |
-| **STIR/SHAKEN** | [![Build](https://github.com/dasmlab/souverix/workflows/Build/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/souverix/workflows/Test/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/test.yml) | - | - |
-| **LI/Emergency** | [![Build](https://github.com/dasmlab/souverix/workflows/Build/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/souverix/workflows/Test/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/test.yml) | - | - |
+| **P-CSCF & Common** | [![P-CSCF Pipeline](https://github.com/dasmlab/ims/workflows/P-CSCF%20Full%20Pipeline%20(Build%20→%20Test%20→%20Publish%20→%20System%20Test%20→%20Stable)/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/pcscf-full-pipeline.yml) | [![P-CSCF Tests](https://github.com/dasmlab/ims/workflows/P-CSCF%20Full%20Pipeline%20(Build%20→%20Test%20→%20Publish%20→%20System%20Test%20→%20Stable)/badge.svg?event=push)](https://github.com/dasmlab/ims/actions/workflows/pcscf-full-pipeline.yml) | - | - |
+| **IMS Core** | [![Build](https://github.com/dasmlab/ims/workflows/Build/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/ims/workflows/Test/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/test.yml) | [![Coverage](https://codecov.io/gh/dasmlab/ims/branch/main/graph/badge.svg)](https://codecov.io/gh/dasmlab/ims) | [![Lint](https://github.com/dasmlab/ims/workflows/Lint/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/lint.yml) |
+| **IBCF/SIG-GW** | [![Build](https://github.com/dasmlab/ims/workflows/Build/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/ims/workflows/Test/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/test.yml) | - | - |
+| **STIR/SHAKEN** | [![Build](https://github.com/dasmlab/ims/workflows/Build/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/ims/workflows/Test/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/test.yml) | - | - |
+| **LI/Emergency** | [![Build](https://github.com/dasmlab/ims/workflows/Build/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/ims/workflows/Test/badge.svg)](https://github.com/dasmlab/ims/actions/workflows/test.yml) | - | - |
 
-**Latest Build**: [View Details](https://github.com/dasmlab/souverix/actions)
+**Latest Build**: [View Details](https://github.com/dasmlab/ims/actions)
 
 ---
-
-
 
 
 

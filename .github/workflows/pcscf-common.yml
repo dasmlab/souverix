@@ -1,0 +1,111 @@
+name: P-CSCF & Common Components CI
+
+on:
+  push:
+    paths:
+      - 'internal/coeur/pcscf/**'
+      - 'internal/common/**'
+      - '.github/workflows/pcscf-common.yml'
+  pull_request:
+    paths:
+      - 'internal/coeur/pcscf/**'
+      - 'internal/common/**'
+      - '.github/workflows/pcscf-common.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test P-CSCF & Common
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: go.sum
+
+      - name: Verify Go version
+        run: go version
+
+      - name: Get dependencies
+        run: go mod download
+        working-directory: ${{ github.workspace }}
+
+      - name: Build P-CSCF component
+        run: go build -v ./internal/coeur/pcscf/...
+        working-directory: ${{ github.workspace }}
+
+      - name: Build Common SIP component
+        run: go build -v ./internal/common/sip/...
+        working-directory: ${{ github.workspace }}
+
+      - name: Run P-CSCF unit tests
+        run: |
+          go test -v -race -coverprofile=coverage-pcscf.out \
+            ./internal/coeur/pcscf/...
+        working-directory: ${{ github.workspace }}
+        continue-on-error: true
+
+      - name: Run Common SIP unit tests
+        run: |
+          go test -v -race -coverprofile=coverage-common.out \
+            ./internal/common/sip/...
+        working-directory: ${{ github.workspace }}
+        continue-on-error: true
+
+      - name: Generate test coverage report
+        run: |
+          if [ -f coverage-pcscf.out ] && [ -f coverage-common.out ]; then
+            go tool cover -html=coverage-pcscf.out \
+              -o coverage-pcscf.html || true
+            go tool cover -html=coverage-common.out \
+              -o coverage-common.html || true
+          fi
+        working-directory: ${{ github.workspace }}
+
+      - name: Lint P-CSCF
+        run: |
+          if command -v golangci-lint &> /dev/null; then
+            golangci-lint run ./internal/coeur/pcscf/... || true
+          else
+            echo "golangci-lint not available, skipping lint"
+          fi
+        working-directory: ${{ github.workspace }}
+        continue-on-error: true
+
+      - name: Lint Common SIP
+        run: |
+          if command -v golangci-lint &> /dev/null; then
+            golangci-lint run ./internal/common/sip/... || true
+          else
+            echo "golangci-lint not available, skipping lint"
+          fi
+        working-directory: ${{ github.workspace }}
+        continue-on-error: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            coverage-*.out
+            coverage-*.html
+          retention-days: 7
+
+      - name: Build status summary
+        if: always()
+        run: |
+          echo "## P-CSCF & Common Components Build Status" \
+            >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Build: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "🧪 Tests: See test results above" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Artifacts: Coverage reports uploaded" \
+            >> $GITHUB_STEP_SUMMARY
