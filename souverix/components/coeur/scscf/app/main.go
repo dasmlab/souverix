@@ -32,6 +32,7 @@ func main() {
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix Scscf - Version: " + version + " Build: " + gitCommit)
 	
+	// Scscf stub - will be implemented later
 	log.Info("Scscf component started (stub)")
 	
 	quit := make(chan os.Signal, 1)

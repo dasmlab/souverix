@@ -32,6 +32,7 @@ func main() {
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix Hss - Version: " + version + " Build: " + gitCommit)
 	
+	// Hss stub - will be implemented later
 	log.Info("Hss component started (stub)")
 	
 	quit := make(chan os.Signal, 1)

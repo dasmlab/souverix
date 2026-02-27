@@ -32,6 +32,7 @@ func main() {
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix Mgcf - Version: " + version + " Build: " + gitCommit)
 	
+	// Mgcf stub - will be implemented later
 	log.Info("Mgcf component started (stub)")
 	
 	quit := make(chan os.Signal, 1)
