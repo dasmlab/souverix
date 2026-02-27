@@ -9,6 +9,7 @@ This directory contains flow diagrams for each Souverix component, showing how t
 - [I-CSCF Flows](./icscf-flows.md) - Interrogating Call Session Control Function flows
 - [S-CSCF Flows](./scscf-flows.md) - Serving Call Session Control Function flows
 - [MGCF Flows](./mgcf-flows.md) - Media Gateway Control Function flows
+- [HSS Flows](./hss-flows.md) - Home Subscriber Server flows
 - *More component flows to be added...*
 
 ## Flow Categories
