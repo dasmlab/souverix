@@ -4,10 +4,11 @@
 
 | Component | Code Name | Build Pipeline |
 |-----------|-----------|----------------|
+| **Souverix Coeur** | IMS Core (P-CSCF, I-CSCF, S-CSCF, BGCF, MGCF, HSS) | [![Coeur Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Coeur%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/coeur-full-pipeline.yml) |
 | **P-CSCF** | Souverix Coeur (P-CSCF) | [![P-CSCF Pipeline](https://github.com/dasmlab/souverix/workflows/P-CSCF%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/pcscf-full-pipeline.yml) |
-| **IBCF/SIG-GW** | Souverix Rempart | *Coming soon* |
-| **STIR/SHAKEN** | Souverix Rempart (STIR) | *Coming soon* |
-| **LI/Emergency** | Souverix Mandat / Souverix Priorite | *Coming soon* |
+| **Souverix Rempart** | SIG-GW / IBCF / Border Control | [![Rempart Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Rempart%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/rempart-full-pipeline.yml) |
+| **Souverix Mandat** | Lawful Intercept | [![Mandat Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Mandat%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/mandat-full-pipeline.yml) |
+| **Souverix Priorite** | Emergency & Priority Services | [![Priorite Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Priorite%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/priorite-full-pipeline.yml) |
 
 **Documentation**: [MkDocs Site](https://dasmlab.github.io/souverix/) | [Build Docs](https://github.com/dasmlab/souverix/actions/workflows/pages.yml)
 

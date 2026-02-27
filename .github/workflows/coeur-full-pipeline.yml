@@ -1,29 +1,28 @@
-name: P-CSCF Full Pipeline (Build → Test → Publish → System Test → Stable)
+name: Souverix Coeur Full Pipeline (Build → Test → Publish → System Test → Stable)
 
 on:
   push:
     paths:
-      - 'souverix/internal/coeur/pcscf/**'
+      - 'souverix/internal/coeur/**'
       - 'souverix/internal/common/**'
-      - '.github/workflows/pcscf-full-pipeline.yml'
+      - '.github/workflows/coeur-full-pipeline.yml'
   pull_request:
     paths:
-      - 'souverix/internal/coeur/pcscf/**'
+      - 'souverix/internal/coeur/**'
       - 'souverix/internal/common/**'
-      - '.github/workflows/pcscf-full-pipeline.yml'
+      - '.github/workflows/coeur-full-pipeline.yml'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/pcscf
-  COMPONENT: pcscf
+  IMAGE_NAME: ${{ github.repository }}/coeur
+  COMPONENT: coeur
 
 jobs:
   # PHASE 1: BUILD
   build:
     name: Build Container (Kaniko)
     runs-on: [self-hosted, kaniko]
-    # Note: Using Kaniko - daemonless, designed for Kubernetes builds
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
       image-digest: ${{ steps.build.outputs.image-digest }}
@@ -65,7 +64,7 @@ jobs:
           # Build with Kaniko (daemonless, designed for Kubernetes)
           /kaniko/executor \
             --context . \
-            --dockerfile Dockerfile.pcscf \
+            --dockerfile Dockerfile.coeur \
             --build-arg COMPONENT=${{ env.COMPONENT }} \
             --build-arg VERSION=${{ github.sha }} \
             --destination "$IMAGE_TAG" \
@@ -94,12 +93,11 @@ jobs:
           echo "📦 Image: ${{ steps.build.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
           echo "🔖 Digest: ${{ steps.build.outputs.image-digest }}" >> $GITHUB_STEP_SUMMARY
 
-  # PHASE 2: UNIT TEST (via Diagnostic API)
+  # PHASE 2: UNIT TEST
   unit-test:
     name: Unit Test via Diagnostic API
-    runs-on: self-hosted
+    runs-on: [self-hosted, kaniko]
     needs: build
-    # Note: Using Kaniko runner - can use podman for running containers
     outputs:
       test-status: ${{ steps.test.outputs.status }}
       test-results: ${{ steps.test.outputs.results }}
@@ -110,6 +108,7 @@ jobs:
 
       - name: Check for Buildah/Podman
         id: container-check
+        working-directory: souverix
         run: |
           if command -v buildah &> /dev/null; then
             buildah --version
@@ -126,6 +125,7 @@ jobs:
 
       - name: Pull built image
         if: steps.container-check.outputs.container_available == 'true' && needs.build.outputs.image-tag != ''
+        working-directory: souverix
         run: |
           if [ "${{ steps.container-check.outputs.runtime }}" = "buildah" ]; then
             buildah pull ${{ needs.build.outputs.image-tag }}
@@ -136,9 +136,9 @@ jobs:
       - name: Start container with diagnostics
         if: steps.container-check.outputs.container_available == 'true'
         id: start-container
+        working-directory: souverix
         run: |
           if [ "${{ steps.container-check.outputs.runtime }}" = "buildah" ]; then
-            # Buildah doesn't run containers, use podman if available, or skip
             if command -v podman &> /dev/null; then
               CONTAINER_ID=$(podman run -d \
                 -p 8081:8081 \
@@ -160,61 +160,45 @@ jobs:
               ${{ needs.build.outputs.image-tag }})
             echo "container_id=$CONTAINER_ID" >> $GITHUB_OUTPUT
           fi
-          
-          # Wait for container to be ready
-          echo "Waiting for container to start..."
-          for i in {1..30}; do
-            if curl -f http://localhost:8081/health > /dev/null 2>&1; then
-              echo "Container is ready"
-              break
-            fi
-            sleep 1
-          done
 
       - name: Run unit tests via diagnostic API
         if: steps.container-check.outputs.container_available == 'true'
         id: test
+        working-directory: souverix
         run: |
           echo "Running unit tests via diagnostic API..."
-          RESPONSE=$(curl -s -w "\n%{http_code}" \
-            -H "X-Diagnostic-Role: diagnostics" \
-            http://localhost:8081/diagnostics/test/run)
+          sleep 5  # Wait for container to be ready
           
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
+          TEST_RESULT=$(curl -s -X POST http://localhost:8081/diagnostics/test/run || echo '{"status":"error"}')
+          sleep 10  # Wait for tests to complete
           
-          echo "HTTP Code: $HTTP_CODE"
-          echo "Response: $BODY"
+          RESULTS=$(curl -s http://localhost:8081/diagnostics/test/results || echo '{"status":"error","message":"Failed to retrieve results"}')
           
-          # Parse test results
-          STATUS=$(echo "$BODY" | jq -r '.status // "unknown"')
-          PASSED=$(echo "$BODY" | jq -r '.passed // 0')
-          FAILED=$(echo "$BODY" | jq -r '.failed // 0')
-          TOTAL=$(echo "$BODY" | jq -r '.total_tests // 0')
+          STATUS=$(echo "$RESULTS" | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
           
           echo "status=$STATUS" >> $GITHUB_OUTPUT
-          echo "results={\"status\":\"$STATUS\",\"passed\":$PASSED,\"failed\":$FAILED,\"total\":$TOTAL}" >> $GITHUB_OUTPUT
+          echo "results=$RESULTS" >> $GITHUB_OUTPUT
           
-          # Save full results
-          echo "$BODY" > test-results.json
-          
-          if [ "$STATUS" != "pass" ] || [ "$HTTP_CODE" != "200" ]; then
-            echo "❌ Unit tests failed"
+          if [ "$STATUS" != "pass" ]; then
+            echo "❌ Tests failed or returned status: $STATUS"
+            echo "$RESULTS" | jq '.' || echo "$RESULTS"
             exit 1
           fi
           
-          echo "✅ All unit tests passed"
+          echo "✅ All tests passed"
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-results
-          path: test-results.json
+          name: coeur-unit-test-results
+          path: |
+            souverix/test-results.json
           retention-days: 30
 
       - name: Cleanup container
         if: always() && steps.container-check.outputs.container_available == 'true'
+        working-directory: souverix
         run: |
           if command -v podman &> /dev/null; then
             podman stop ${{ steps.start-container.outputs.container_id }} || true
@@ -243,7 +227,7 @@ jobs:
   # PHASE 3: PUBLISH (Tag and Trigger System Test)
   publish:
     name: Publish and Tag for System Test
-    runs-on: self-hosted
+    runs-on: [self-hosted, kaniko]
     needs: [build, unit-test]
     if: needs.unit-test.outputs.test-status == 'pass'
     outputs:
@@ -255,11 +239,12 @@ jobs:
 
       - name: Create test tag
         id: tag
+        working-directory: souverix
         run: |
           TAG="test-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA:0:7}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           
-          # Tag the image (use podman if available, otherwise skip - Kaniko doesn't tag/pull)
+          # Tag the image (use podman if available)
           if command -v podman &> /dev/null; then
             podman pull ${{ needs.build.outputs.image-tag }}
             podman tag ${{ needs.build.outputs.image-tag }} \
@@ -289,29 +274,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trigger system test deployment
+        working-directory: souverix
         run: |
           echo "## System Test Phase (Phantom Trigger)" >> $GITHUB_STEP_SUMMARY
-          echo "🚀 Triggering system test deployment..." >> $GITHUB_STEP_SUMMARY
+          echo "📋 This would trigger:" >> $GITHUB_STEP_SUMMARY
+          echo "  - Deploy ${{ needs.publish.outputs.published-tag }} to test cluster" >> $GITHUB_STEP_SUMMARY
+          echo "  - Run PIXIT test suite" >> $GITHUB_STEP_SUMMARY
+          echo "  - Execute phantom call scenarios" >> $GITHUB_STEP_SUMMARY
+          echo "  - Validate STIR/SHAKEN integration" >> $GITHUB_STEP_SUMMARY
+          echo "  - Check LI/Emergency routing" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**In production, this would:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Deploy to test cluster (K8s/OCP)" >> $GITHUB_STEP_SUMMARY
-          echo "- Trigger AAP/EDA workflow" >> $GITHUB_STEP_SUMMARY
-          echo "- Run system integration tests" >> $GITHUB_STEP_SUMMARY
-          echo "- Test against other IMS components" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Current status:** Phantom trigger - ready for integration" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Image: ${{ needs.build.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
-          echo "Test Tag: ${{ needs.publish.outputs.published-tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "⏳ Waiting for system test completion..." >> $GITHUB_STEP_SUMMARY
           
-          # Placeholder for actual system test trigger
-          # Example: kubectl apply -f k8s/pcscf-test.yaml
-          # Example: curl -X POST https://aap.example.com/api/v2/job_templates/123/launch/
-          # Example: Trigger EDA event for system test
-          
-          echo "✅ System test trigger prepared"
+          # In real implementation, this would:
+          # 1. Trigger AAP/EDA playbook for deployment
+          # 2. Wait for test completion via webhook/API
+          # 3. Parse results from test cluster
+          sleep 30  # Simulate wait time
 
       - name: Simulate system test results
+        working-directory: souverix
         run: |
           # In real implementation, this would wait for system test completion
           # and parse results from test cluster/AAP/EDA
@@ -322,8 +304,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: system-test-results
-          path: system-test-results.json
+          name: coeur-system-test-results
+          path: souverix/system-test-results.json
           retention-days: 30
 
   # PHASE 5: PUBLISH STABLE
@@ -340,6 +322,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Tag as stable/released
+        working-directory: souverix
         run: |
           STABLE_TAG="stable-$(date +%Y%m%d)"
           RELEASE_TAG="released-${GITHUB_SHA:0:7}"
@@ -356,8 +339,6 @@ jobs:
             podman push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$RELEASE_TAG"
           else
             echo "⚠️ Podman not available - using Kaniko to push additional tags"
-            # Kaniko can push directly if we have the image in local storage
-            # For now, we'll note that the image needs to be re-tagged via registry API or podman
             echo "Note: Stable tags should be created via registry API or with podman"
           fi
           
@@ -369,21 +350,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: pcscf-${{ github.sha }}
-          release_name: P-CSCF Release ${{ github.sha }}
+          tag_name: coeur-v${{ github.run_number }}
+          release_name: Souverix Coeur Release ${{ github.run_number }}
           body: |
-            P-CSCF Component Release
+            ## Souverix Coeur (IMS Core) Release
             
-            - Build: ✅ Passed
-            - Unit Tests: ✅ Passed
-            - System Tests: ✅ Passed
+            **Component**: Souverix Coeur
+            **Version**: ${{ github.sha }}
+            **Image**: ${{ needs.build.outputs.image-tag }}
             
-            Image: ${{ needs.build.outputs.image-tag }}
+            ### Changes
+            - See commit history for details
+            
+            ### Artifacts
+            - Container Image: `${{ needs.build.outputs.image-tag }}`
+            - Stable Tag: `stable-$(date +%Y%m%d)`
           draft: false
           prerelease: false
-
-      - name: Stable release status
-        run: |
-          echo "## Stable Release Phase Complete" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Component published as stable" >> $GITHUB_STEP_SUMMARY
-          echo "🏷️ Tags: stable-$(date +%Y%m%d), released-${GITHUB_SHA:0:7}" >> $GITHUB_STEP_SUMMARY
