@@ -33,14 +33,15 @@ spec:
           allowPrivilegeEscalation: true
           privileged: false  # Kaniko doesn't need privileged mode
           runAsUser: 0  # Run as root - Kaniko works as root
+        imagePullPolicy: Always
         env:
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
               name: github-runner-secrets
               key: github_token
-        - name: GITHUB_REPO_URL
-          value: "https://github.com/dasmlab"
+        - name: REPO_URL
+          value: "https://github.com/dasmlab/souverix"
         - name: RUNNER_NAME
           value: "2026-prod-3"  # Kaniko runner
         - name: RUNNER_LABELS
@@ -55,6 +56,13 @@ spec:
               name: registry-secrets
               key: password
               optional: true
+        # SSL certificate configuration - use system certs for runner, Kaniko uses its own
+        - name: SSL_CERT_DIR
+          value: "/etc/ssl/certs"  # System certs for runner (GitHub API connections)
+        - name: REQUESTS_CA_BUNDLE
+          value: "/etc/ssl/certs/ca-certificates.crt"
+        - name: CURL_CA_BUNDLE
+          value: "/etc/ssl/certs/ca-certificates.crt"
         volumeMounts:
         - name: workspace
           mountPath: /home/runner/_work

@@ -1,29 +1,69 @@
 # GitHub Actions Runner with Kaniko support
 # For Kubernetes-based builds in OCP
 # Based on actions/runner with Kaniko integration
-
 FROM gcr.io/kaniko-project/executor:latest AS kaniko
 
-FROM docker.io/myoung34/github-runner:latest
+FROM ubuntu:22.04
 
 # Copy Kaniko executor (main binary)
 COPY --from=kaniko /kaniko/executor /kaniko/executor
 
-# Set Kaniko environment
-ENV PATH="/kaniko:${PATH}"
-ENV DOCKER_CONFIG=/kaniko/.docker
-ENV SSL_CERT_DIR=/kaniko/ssl/certs
-
-# Create Kaniko directories
-RUN mkdir -p /kaniko/.docker /kaniko/ssl/certs
 
 # Install additional tools if needed
 RUN apt-get update && apt-get install -y \
     curl \
+    git \
+    ca-certificates \
+    sudo \
+    libicu70 \
+    libssl3 \
+    libstdc++6 \
+    zlib1g \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
-# Kaniko works as root, which matches our runner setup
-USER root
+# Set Kaniko environment (only for Kaniko builds, not for runner)
+ENV PATH="/kaniko:${PATH}"
+ENV DOCKER_CONFIG=/kaniko/.docker
+# Note: Don't set SSL_CERT_DIR globally - it breaks the runner's SSL connections
+# Kaniko will use its own certs, runner will use system certs
 
+# Create Kaniko directories
+RUN mkdir -p /kaniko/.docker /kaniko/ssl/certs && \
+    # Copy system CA certs to Kaniko directory for Kaniko builds
+    cp -r /etc/ssl/certs/* /kaniko/ssl/certs/ 2>/dev/null || true
+
+# Create a non-root user for running the runner
+RUN useradd -m -u 1000 runner && \
+    chown -R runner:runner /home/runner && \
+    chmod 755 /home/runner
+
+# Configure sudo for runner user - allow all commands without password (dev/internal cluster)
+# Create a sudoers.d file (better practice than modifying /etc/sudoers directly)
+RUN echo "runner ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/runner && \
+    chmod 0440 /etc/sudoers.d/runner && \
+    visudo -c || true
+
+# Install GitHub Actions runner
+USER root
 WORKDIR /home/runner
+RUN curl -O -L https://github.com/actions/runner/releases/download/v2.332.0/actions-runner-linux-x64-2.332.0.tar.gz \
+    && tar xzf actions-runner-linux-x64-2.332.0.tar.gz \
+    && rm actions-runner-linux-x64-2.332.0.tar.gz \
+    && chown -R 1000:1000 /home/runner \
+    && chmod +x /home/runner/*.sh
+
+# Install runner dependencies (including .NET Core dependencies)
+RUN cd /home/runner && ./bin/installdependencies.sh || true
+
+# Copy startup script
+COPY scripts/start-runner.sh /home/runner/start-runner.sh
+RUN chmod +x /home/runner/start-runner.sh && \
+    chown 1000:1000 /home/runner/start-runner.sh
+
+# Set PATH to ensure buildah/podman are accessible
+ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}"
+
+# Set entrypoint to startup script
+ENTRYPOINT ["/home/runner/start-runner.sh"]
+                                                        
