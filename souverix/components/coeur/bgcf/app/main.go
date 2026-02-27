@@ -45,15 +45,21 @@ func main() {
 	diag := diagnostics.New("Souverix BGCF", version, buildTime, gitCommit, logger)
 	diag.RegisterRoutes(router)
 
+	// Get port from environment or use default
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8084"
+	}
+
 	// Create HTTP server
 	srv := &http.Server{
-		Addr:    ":8084",
+		Addr:    ":" + port,
 		Handler: router,
 	}
 
 	// Start server in goroutine
 	go func() {
-		logger.Info("Starting diagnostic server on :8084")
+		logger.Infof("Starting diagnostic server on :%s", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.WithError(err).Fatal("failed to start diagnostic server")
 		}

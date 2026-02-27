@@ -8,8 +8,12 @@ RUN apk add --no-cache git &&     go install github.com/swaggo/swag/cmd/swag@lat
 ARG goproxy=https://proxy.golang.org
 ENV GOPROXY=$goproxy
 
+# Copy common packages first (needed for imports)
+COPY ../../common/ ./components/common/
+
+# Copy app files
 COPY app/go.mod app/go.sum* ./
-RUN go mod download && go mod tidy && go mod tidy
+RUN go mod download && go mod tidy
 
 COPY app/ ./
 
