@@ -25,10 +25,9 @@ jobs:
     runs-on: [self-hosted, dind]
     env:
       # For OCP/Kubernetes self-hosted runners with dind sidecar
-      # Runner pod must include docker:dind sidecar with privileged mode and TLS certs
-      DOCKER_HOST: tcp://localhost:2376
-      DOCKER_TLS_CERTDIR: "/certs"
-      DOCKER_TLS_VERIFY: "1"
+      # Runner pod must include docker:dind sidecar with privileged mode
+      # Uses Unix socket for communication (simpler, no TLS needed)
+      DOCKER_HOST: unix:///var/run/docker.sock
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
@@ -51,7 +50,7 @@ jobs:
           else
             echo "⚠️ Docker daemon not available"
             echo "⚠️ Build will be skipped - ensure runner pod includes docker:dind sidecar"
-            echo "Required: DOCKER_HOST=tcp://localhost:2376 with TLS certs in /certs"
+            echo "Required: DOCKER_HOST=unix:///var/run/docker.sock (socket mounted at /var/run)"
             echo "See docs/OCP_RUNNER_SETUP.md for setup instructions"
             echo "docker_available=false" >> $GITHUB_OUTPUT
           fi
@@ -125,9 +124,8 @@ jobs:
     needs: build
     env:
       # For OCP/Kubernetes self-hosted runners with dind sidecar
-      DOCKER_HOST: tcp://localhost:2376
-      DOCKER_TLS_CERTDIR: "/certs"
-      DOCKER_TLS_VERIFY: "1"
+      # Uses Unix socket for communication
+      DOCKER_HOST: unix:///var/run/docker.sock
     outputs:
       test-status: ${{ steps.test.outputs.status }}
       test-results: ${{ steps.test.outputs.results }}
@@ -262,9 +260,7 @@ jobs:
       - name: Create test tag
         id: tag
         env:
-          DOCKER_HOST: tcp://localhost:2376
-          DOCKER_TLS_CERTDIR: "/certs"
-          DOCKER_TLS_VERIFY: "1"
+          DOCKER_HOST: unix:///var/run/docker.sock
         run: |
           TAG="test-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA:0:7}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
@@ -347,9 +343,7 @@ jobs:
 
       - name: Tag as stable/released
         env:
-          DOCKER_HOST: tcp://localhost:2376
-          DOCKER_TLS_CERTDIR: "/certs"
-          DOCKER_TLS_VERIFY: "1"
+          DOCKER_HOST: unix:///var/run/docker.sock
         run: |
           STABLE_TAG="stable-$(date +%Y%m%d)"
           RELEASE_TAG="released-${GITHUB_SHA:0:7}"

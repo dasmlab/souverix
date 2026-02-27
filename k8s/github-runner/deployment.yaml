@@ -52,11 +52,7 @@ spec:
               key: password
               optional: true
         - name: DOCKER_HOST
-          value: "tcp://localhost:2376"
-        - name: DOCKER_TLS_CERTDIR
-          value: "/certs"
-        - name: DOCKER_TLS_VERIFY
-          value: "1"
+          value: "unix:///var/run/docker.sock"
         volumeMounts:
         - name: workspace
           mountPath: /workspace
