@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: souverix-{{COMPONENT}}-config
+  namespace: souverix-{{COMPONENT}}
+  labels:
+    app: souverix-{{COMPONENT}}
+    component: {{COMPONENT}}
+    platform: souverix
+data:
+  LOG_LEVEL: "info"
+  COMPONENT: "{{COMPONENT}}"
+  # Add component-specific configuration here

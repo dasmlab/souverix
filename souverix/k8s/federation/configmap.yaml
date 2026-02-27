@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: souverix-federation-config
+  namespace: souverix-federation
+  labels:
+    app: souverix-federation
+    component: federation
+    platform: souverix
+data:
+  LOG_LEVEL: "info"
+  COMPONENT: "federation"
+  # Add component-specific configuration here

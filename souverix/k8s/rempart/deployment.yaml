@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: souverix-rempart
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: souverix-rempart
+  namespace: souverix-rempart
+  labels:
+    app: souverix-rempart
+    component: rempart
+    platform: souverix
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: souverix-rempart
+  template:
+    metadata:
+      labels:
+        app: souverix-rempart
+        component: rempart
+        platform: souverix
+    spec:
+      containers:
+      - name: rempart
+        image: ghcr.io/dasmlab/rempart:latest
+        imagePullPolicy: Always
+        ports:
+        - name: 5060
+          containerPort: 5060
+          protocol: TCP
+        - name: 5061
+          containerPort: 5061
+          protocol: TCP
+        - name: 8081
+          containerPort: 8081
+          protocol: TCP
+        - name: health
+          containerPort: 8081
+          protocol: TCP
+
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        - name: COMPONENT
+          value: "rempart"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: souverix-rempart
+  namespace: souverix-rempart
+  labels:
+    app: souverix-rempart
+    component: rempart
+    platform: souverix
+spec:
+  type: ClusterIP
+  ports:
+  - name: 5060
+    port: 5060
+    targetPort: 5060
+    protocol: TCP
+  - name: 5061
+    port: 5061
+    targetPort: 5061
+    protocol: TCP
+  - name: 8081
+    port: 8081
+    targetPort: 8081
+    protocol: TCP
+  - name: health
+    port: 8081
+    targetPort: 8081
+    protocol: TCP
+
+  selector:
+    app: souverix-rempart

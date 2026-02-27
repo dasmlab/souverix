@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: souverix-relais
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: souverix-relais
+  namespace: souverix-relais
+  labels:
+    app: souverix-relais
+    component: relais
+    platform: souverix
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: souverix-relais
+  template:
+    metadata:
+      labels:
+        app: souverix-relais
+        component: relais
+        platform: souverix
+    spec:
+      containers:
+      - name: relais
+        image: ghcr.io/dasmlab/relais:latest
+        imagePullPolicy: Always
+        ports:
+        - name: 5004
+          containerPort: 5004
+          protocol: TCP
+        - name: 5005
+          containerPort: 5005
+          protocol: TCP
+        - name: 8081
+          containerPort: 8081
+          protocol: TCP
+        - name: health
+          containerPort: 8081
+          protocol: TCP
+
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        - name: COMPONENT
+          value: "relais"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: souverix-relais
+  namespace: souverix-relais
+  labels:
+    app: souverix-relais
+    component: relais
+    platform: souverix
+spec:
+  type: ClusterIP
+  ports:
+  - name: 5004
+    port: 5004
+    targetPort: 5004
+    protocol: TCP
+  - name: 5005
+    port: 5005
+    targetPort: 5005
+    protocol: TCP
+  - name: 8081
+    port: 8081
+    targetPort: 8081
+    protocol: TCP
+  - name: health
+    port: 8081
+    targetPort: 8081
+    protocol: TCP
+
+  selector:
+    app: souverix-relais

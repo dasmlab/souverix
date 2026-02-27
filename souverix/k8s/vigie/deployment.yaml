@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: souverix-vigie
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: souverix-vigie
+  namespace: souverix-vigie
+  labels:
+    app: souverix-vigie
+    component: vigie
+    platform: souverix
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: souverix-vigie
+  template:
+    metadata:
+      labels:
+        app: souverix-vigie
+        component: vigie
+        platform: souverix
+    spec:
+      containers:
+      - name: vigie
+        image: ghcr.io/dasmlab/vigie:latest
+        imagePullPolicy: Always
+        ports:
+        - name: 8081
+          containerPort: 8081
+          protocol: TCP
+        - name: health
+          containerPort: 8081
+          protocol: TCP
+
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        - name: COMPONENT
+          value: "vigie"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: souverix-vigie
+  namespace: souverix-vigie
+  labels:
+    app: souverix-vigie
+    component: vigie
+    platform: souverix
+spec:
+  type: ClusterIP
+  ports:
+  - name: 8081
+    port: 8081
+    targetPort: 8081
+    protocol: TCP
+  - name: health
+    port: 8081
+    targetPort: 8081
+    protocol: TCP
+
+  selector:
+    app: souverix-vigie

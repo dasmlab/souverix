@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: souverix-mandat-config
+  namespace: souverix-mandat
+  labels:
+    app: souverix-mandat
+    component: mandat
+    platform: souverix
+data:
+  LOG_LEVEL: "info"
+  COMPONENT: "mandat"
+  # Add component-specific configuration here

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: souverix-vigile-config
+  namespace: souverix-vigile
+  labels:
+    app: souverix-vigile
+    component: vigile
+    platform: souverix
+data:
+  LOG_LEVEL: "info"
+  COMPONENT: "vigile"
+  # Add component-specific configuration here
