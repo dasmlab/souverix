@@ -32,7 +32,7 @@ WORKDIR /
 COPY --from=builder /out/mgcf /mgcf
 COPY --from=builder /app/docs /docs
 
-EXPOSE 8081/tcp
+EXPOSE 8085/tcp
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3   CMD ["/mgcf", "--health-check"] || exit 1
 
