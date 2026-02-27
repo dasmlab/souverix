@@ -3,6 +3,7 @@ module github.com/dasmlab/ims
 go 1.26
 
 require (
+	github.com/Depado/ginprom v1.7.0
 	github.com/dasmlab/souverix/common v0.0.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/sirupsen/logrus v1.9.3

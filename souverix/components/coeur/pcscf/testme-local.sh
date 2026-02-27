@@ -5,8 +5,8 @@ set -euo pipefail
 # Tests the /diag/local_test endpoint
 
 COMPONENT="pcscf"
-PORT="${PORT:-8081}"
-DIAG_URL="http://localhost:${PORT}/diag/local_test"
+DIAG_PORT="${DIAG_PORT:-9081}"
+DIAG_URL="http://localhost:${DIAG_PORT}/diag/local_test"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
@@ -15,8 +15,8 @@ echo "🧪 Testing ${COMPONENT} component locally..."
 echo ""
 
 # Check if component is running
-if ! curl -s -f "http://localhost:${PORT}/diag/health" > /dev/null 2>&1; then
-    echo "❌ Component is not running on port ${PORT}"
+if ! curl -s -f "http://localhost:${DIAG_PORT}/diag/health" > /dev/null 2>&1; then
+    echo "❌ Component is not running on port ${DIAG_PORT}"
     echo "   Start it with: ./runme-local.sh"
     exit 1
 fi
