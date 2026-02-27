@@ -100,12 +100,9 @@ jobs:
   # PHASE 2: UNIT TEST (via Diagnostic API)
   unit-test:
     name: Unit Test via Diagnostic API
-    runs-on: [self-hosted, dind]
+    runs-on: self-hosted
     needs: build
-    env:
-      # For OCP/Kubernetes self-hosted runners with dind sidecar
-      # Uses Unix socket for communication
-      DOCKER_HOST: unix:///var/run/docker.sock
+    # Note: Using Podman - no Docker daemon needed
     outputs:
       test-status: ${{ steps.test.outputs.status }}
       test-results: ${{ steps.test.outputs.results }}
@@ -114,35 +111,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify Docker daemon
-        id: docker-check
-        continue-on-error: true
+      - name: Check for Podman
+        id: podman-check
         run: |
-          echo "Checking Docker daemon availability..."
-          echo "DOCKER_HOST=${DOCKER_HOST:-not set}"
-          
-          # Check if socket exists and is accessible
-          if [ -S /var/run/docker.sock ]; then
-            echo "✅ Docker socket found at /var/run/docker.sock"
-            echo "docker_available=true" >> $GITHUB_OUTPUT
+          if command -v podman &> /dev/null; then
+            podman --version
+            echo "podman_available=true" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Docker socket not found at /var/run/docker.sock"
-            echo "⚠️ Unit tests will be skipped - ensure runner pod includes docker:dind sidecar"
-            echo "See docs/OCP_RUNNER_SETUP.md for setup instructions"
-            echo "docker_available=false" >> $GITHUB_OUTPUT
-            exit 0  # Don't fail, just mark as unavailable
+            echo "⚠️ Podman not available"
+            echo "podman_available=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Pull built image
-        if: steps.docker-check.outputs.docker_available == 'true' && needs.build.outputs.image-tag != ''
+        if: steps.podman-check.outputs.podman_available == 'true' && needs.build.outputs.image-tag != ''
         run: |
-          docker pull ${{ needs.build.outputs.image-tag }}
+          podman pull ${{ needs.build.outputs.image-tag }}
 
       - name: Start container with diagnostics
-        if: steps.docker-check.outputs.docker_available == 'true'
+        if: steps.podman-check.outputs.podman_available == 'true'
         id: start-container
         run: |
-          CONTAINER_ID=$(docker run -d \
+          CONTAINER_ID=$(podman run -d \
             -p 8081:8081 \
             -e DIAGNOSTICS_ENABLED=true \
             -e DIAGNOSTICS_ADDR=:8081 \
@@ -161,7 +150,7 @@ jobs:
           done
 
       - name: Run unit tests via diagnostic API
-        if: steps.docker-check.outputs.docker_available == 'true'
+        if: steps.podman-check.outputs.podman_available == 'true'
         id: test
         run: |
           echo "Running unit tests via diagnostic API..."
@@ -203,35 +192,34 @@ jobs:
           retention-days: 30
 
       - name: Cleanup container
-        if: always() && steps.docker-check.outputs.docker_available == 'true'
+        if: always() && steps.podman-check.outputs.podman_available == 'true'
         run: |
-          docker stop ${{ steps.start-container.outputs.container_id }} || true
-          docker rm ${{ steps.start-container.outputs.container_id }} || true
+          podman stop ${{ steps.start-container.outputs.container_id }} || true
+          podman rm ${{ steps.start-container.outputs.container_id }} || true
 
-      - name: Skip unit tests (Docker not available)
-        if: steps.docker-check.outputs.docker_available != 'true'
+      - name: Skip unit tests (Podman not available)
+        if: steps.podman-check.outputs.podman_available != 'true'
         run: |
           echo "## Unit Test Phase Skipped" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ Docker daemon not available" >> $GITHUB_STEP_SUMMARY
-          echo "Please set up dind sidecar per docs/OCP_RUNNER_SETUP.md" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Podman not available" >> $GITHUB_STEP_SUMMARY
           echo "status=skip" >> $GITHUB_OUTPUT
-          echo "results={\"status\":\"skip\",\"message\":\"Docker not available\"}" >> $GITHUB_OUTPUT
+          echo "results={\"status\":\"skip\",\"message\":\"Podman not available\"}" >> $GITHUB_OUTPUT
 
       - name: Test status summary
         if: always()
         run: |
           echo "## Unit Test Phase Complete" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.docker-check.outputs.docker_available }}" = "true" ]; then
+          if [ "${{ steps.podman-check.outputs.podman_available }}" = "true" ]; then
             echo "Status: ${{ steps.test.outputs.status }}" >> $GITHUB_STEP_SUMMARY
             echo "Results: ${{ steps.test.outputs.results }}" >> $GITHUB_STEP_SUMMARY
           else
-            echo "Status: skipped (Docker not available)" >> $GITHUB_STEP_SUMMARY
+            echo "Status: skipped (Podman not available)" >> $GITHUB_STEP_SUMMARY
           fi
 
   # PHASE 3: PUBLISH (Tag and Trigger System Test)
   publish:
     name: Publish and Tag for System Test
-    runs-on: [self-hosted, dind]
+    runs-on: self-hosted
     needs: [build, unit-test]
     if: needs.unit-test.outputs.test-status == 'pass'
     outputs:
@@ -243,17 +231,15 @@ jobs:
 
       - name: Create test tag
         id: tag
-        env:
-          DOCKER_HOST: unix:///var/run/docker.sock
         run: |
           TAG="test-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA:0:7}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           
-          # Tag the image
-          docker pull ${{ needs.build.outputs.image-tag }}
-          docker tag ${{ needs.build.outputs.image-tag }} \
+          # Tag the image with Podman
+          podman pull ${{ needs.build.outputs.image-tag }}
+          podman tag ${{ needs.build.outputs.image-tag }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG
+          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG
           
           echo "✅ Tagged and pushed: $TAG"
 
@@ -315,7 +301,7 @@ jobs:
   # PHASE 5: PUBLISH STABLE
   publish-stable:
     name: Publish Stable Release
-    runs-on: [self-hosted, dind]
+    runs-on: self-hosted
     needs: [build, unit-test, publish, system-test]
     if: |
       needs.unit-test.outputs.test-status == 'pass' &&
@@ -326,20 +312,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Tag as stable/released
-        env:
-          DOCKER_HOST: unix:///var/run/docker.sock
         run: |
           STABLE_TAG="stable-$(date +%Y%m%d)"
           RELEASE_TAG="released-${GITHUB_SHA:0:7}"
           
-          docker pull ${{ needs.build.outputs.image-tag }}
-          docker tag ${{ needs.build.outputs.image-tag }} \
+          podman pull ${{ needs.build.outputs.image-tag }}
+          podman tag ${{ needs.build.outputs.image-tag }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$STABLE_TAG
-          docker tag ${{ needs.build.outputs.image-tag }} \
+          podman tag ${{ needs.build.outputs.image-tag }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$RELEASE_TAG
           
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$STABLE_TAG
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$RELEASE_TAG
+          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$STABLE_TAG
+          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$RELEASE_TAG
           
           echo "✅ Tagged as stable: $STABLE_TAG"
           echo "✅ Tagged as released: $RELEASE_TAG"
