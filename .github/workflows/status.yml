@@ -75,6 +75,21 @@ jobs:
           core.setOutput('statuses', JSON.stringify(statuses));
           return statuses;
 
+    - name: Install jq
+      run: |
+        if ! command -v jq &> /dev/null; then
+          if command -v apt-get &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y jq
+          elif command -v yum &> /dev/null; then
+            sudo yum install -y jq
+          elif command -v apk &> /dev/null; then
+            sudo apk add --no-cache jq
+          else
+            echo "⚠️ Cannot install jq automatically"
+            exit 1
+          fi
+        fi
+
     - name: Generate status badge
       id: badge
       run: |

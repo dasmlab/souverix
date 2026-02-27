@@ -122,6 +122,10 @@ jobs:
     name: Unit Test via Diagnostic API
     runs-on: self-hosted
     needs: build
+    env:
+      # For OCP/Kubernetes self-hosted runners with dind sidecar
+      DOCKER_HOST: tcp://localhost:2375
+      DOCKER_TLS_CERTDIR: ""
     outputs:
       test-status: ${{ steps.test.outputs.status }}
       test-results: ${{ steps.test.outputs.results }}
@@ -130,11 +134,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Verify Docker daemon
+        id: docker-check
+        continue-on-error: true
+        run: |
+          echo "Checking Docker daemon availability..."
+          if timeout 10 bash -c 'until docker info > /dev/null 2>&1; do sleep 1; done'; then
+            echo "✅ Docker daemon is available"
+            echo "docker_available=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Docker daemon not available"
+            echo "⚠️ Unit tests will be skipped - ensure runner pod includes docker:dind sidecar"
+            echo "See docs/OCP_RUNNER_SETUP.md for setup instructions"
+            echo "docker_available=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Pull built image
+        if: steps.docker-check.outputs.docker_available == 'true' && needs.build.outputs.image-tag != ''
         run: |
           docker pull ${{ needs.build.outputs.image-tag }}
 
       - name: Start container with diagnostics
+        if: steps.docker-check.outputs.docker_available == 'true'
         id: start-container
         run: |
           CONTAINER_ID=$(docker run -d \
@@ -156,6 +177,7 @@ jobs:
           done
 
       - name: Run unit tests via diagnostic API
+        if: steps.docker-check.outputs.docker_available == 'true'
         id: test
         run: |
           echo "Running unit tests via diagnostic API..."
@@ -197,17 +219,30 @@ jobs:
           retention-days: 30
 
       - name: Cleanup container
-        if: always()
+        if: always() && steps.docker-check.outputs.docker_available == 'true'
         run: |
           docker stop ${{ steps.start-container.outputs.container_id }} || true
           docker rm ${{ steps.start-container.outputs.container_id }} || true
+
+      - name: Skip unit tests (Docker not available)
+        if: steps.docker-check.outputs.docker_available != 'true'
+        run: |
+          echo "## Unit Test Phase Skipped" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Docker daemon not available" >> $GITHUB_STEP_SUMMARY
+          echo "Please set up dind sidecar per docs/OCP_RUNNER_SETUP.md" >> $GITHUB_STEP_SUMMARY
+          echo "status=skip" >> $GITHUB_OUTPUT
+          echo "results={\"status\":\"skip\",\"message\":\"Docker not available\"}" >> $GITHUB_OUTPUT
 
       - name: Test status summary
         if: always()
         run: |
           echo "## Unit Test Phase Complete" >> $GITHUB_STEP_SUMMARY
-          echo "Status: ${{ steps.test.outputs.status }}" >> $GITHUB_STEP_SUMMARY
-          echo "Results: ${{ steps.test.outputs.results }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.docker-check.outputs.docker_available }}" = "true" ]; then
+            echo "Status: ${{ steps.test.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+            echo "Results: ${{ steps.test.outputs.results }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Status: skipped (Docker not available)" >> $GITHUB_STEP_SUMMARY
+          fi
 
   # PHASE 3: PUBLISH (Tag and Trigger System Test)
   publish:
