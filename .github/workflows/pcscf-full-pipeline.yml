@@ -292,7 +292,7 @@ jobs:
   # PHASE 4: SYSTEM TEST (Phantom/Trigger)
   system-test:
     name: System Test (Trigger)
-    runs-on: [self-hosted, dind]
+    runs-on: self-hosted
     needs: [build, unit-test, publish]
     if: needs.unit-test.outputs.test-status == 'pass'
     
