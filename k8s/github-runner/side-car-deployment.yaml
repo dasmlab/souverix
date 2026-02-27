@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-runner
+  namespace: github-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-runner
+  template:
+    metadata:
+      labels:
+        app: github-runner
+    spec:
+      serviceAccountName: github-runner-sa
+      containers:
+      # GitHub Actions Runner
+      - name: runner
+        image: myoung34/github-runner:latest
+        env:
+        - name: RUNNER_NAME
+          value: "ocp-side-car-runner-1"
+        - name: REPO_URL
+          value: "https://github.com/dasmlab/souverix"
+        - name: RUNNER_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-runner-secrets
+              key: github_token
+        - name: RUNNER_WORKDIR
+          value: "/tmp/_work"
+        - name: DOCKER_HOST
+          value: "tcp://localhost:2375"
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+        volumeMounts:
+        - name: workdir
+          mountPath: /tmp/_work
+        - name: dockersock
+          mountPath: /var/run/docker.sock
+        securityContext:
+          privileged: true
+          runAsUser: 0
+      
+      # Docker-in-Docker sidecar
+      - name: dind
+        image: docker:dind
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: dockersock
+          mountPath: /var/run/docker.sock
+        env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+        args:
+        - dockerd
+        - --host=unix:///var/run/docker.sock
+        - --host=tcp://0.0.0.0:2375
+        - --tls=false
+        - --tlsverify=false
+      
+      volumes:
+      - name: workdir
+        emptyDir: {}
+      - name: dockersock
+        emptyDir: {}

@@ -51,9 +51,20 @@ spec:
               name: registry-secrets
               key: password
               optional: true
+        - name: DOCKER_HOST
+          value: "tcp://localhost:2376"
+        - name: DOCKER_TLS_CERTDIR
+          value: "/certs"
+        - name: DOCKER_TLS_VERIFY
+          value: "1"
         volumeMounts:
         - name: workspace
           mountPath: /workspace
+        - name: dockersock
+          mountPath: /var/run
+        - name: dind-certs
+          mountPath: /certs
+          readOnly: true
         resources:
           requests:
             memory: "2Gi"
@@ -61,7 +72,48 @@ spec:
           limits:
             memory: "8Gi"
             cpu: "4000m"
+      
+      # Docker-in-Docker sidecar
+      - name: dind
+        image: docker:dind
+        securityContext:
+          privileged: true
+        env:
+        - name: DOCKER_TLS_CERTDIR
+          value: "/certs"
+        volumeMounts:
+        - name: dockersock
+          mountPath: /var/run
+        - name: dind-certs
+          mountPath: /certs
+        - name: docker-data
+          mountPath: /var/lib/docker
+        args:
+        - dockerd
+        - --host=unix:///var/run/docker.sock
+        - --host=tcp://0.0.0.0:2376
+        - --tlsverify
+        - --tlscacert=/certs/ca.pem
+        - --tlscert=/certs/server-cert.pem
+        - --tlskey=/certs/server-key.pem
+        - --storage-driver=vfs
+        - --data-root=/var/lib/docker
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      
       volumes:
       - name: workspace
         emptyDir: {}
+      - name: dockersock
+        emptyDir: {}
+      - name: docker-data
+        emptyDir: {}
+      - name: dind-certs
+        secret:
+          secretName: dind-certs
       restartPolicy: Always

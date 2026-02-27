@@ -28,8 +28,7 @@ jobs:
       with:
         script: |
           const workflows = [
-            { name: 'build', file: 'build.yml' },
-            { name: 'test', file: 'test.yml' },
+            { name: 'pcscf-full-pipeline', file: 'pcscf-full-pipeline.yml' },
             { name: 'lint', file: 'lint.yml' }
           ];
           const statuses = {};
