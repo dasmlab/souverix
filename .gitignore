@@ -33,6 +33,9 @@ build/
 # MkDocs build output
 site/
 
+# GitHub runner secrets (contains tokens)
+k8s/github-runner/secret.yaml
+
 # Python
 __pycache__/
 *.py[cod]
