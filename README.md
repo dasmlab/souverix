@@ -10,12 +10,12 @@
 | **Souverix Mandat** | Lawful Intercept | [![Souverix Mandat Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/mandat-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/mandat-full-pipeline.yml) |
 | **LI** | Souverix Mandat (Lawful Intercept) | *Part of Mandat* |
 | **Souverix Priorite** | Emergency & Priority Services | [![Souverix Priorite Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/priorite-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/priorite-full-pipeline.yml) |
-| **Souverix Relais** | Media Relay Engine (RTP proxy, SRTP, NAT traversal) | *Coming soon* |
-| **Souverix Autorite** | PKI / HSM / Vault (Cryptographic authority) | *Coming soon* |
-| **Souverix Vigie** | AI Intelligence Engine | *Coming soon* |
-| **Souverix Vigile** | Observability & Audit | *Coming soon* |
-| **Souverix Federation** | Inter-domain Control | *Coming soon* |
-| **Souverix Gouverne** | Policy & Control Plane | *Coming soon* |
+| **Souverix Relais** | Media Relay Engine (RTP proxy, SRTP, NAT traversal) | [![Souverix Relais Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/relais-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/relais-full-pipeline.yml) |
+| **Souverix Autorite** | PKI / HSM / Vault (Cryptographic authority) | [![Souverix Autorite Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/autorite-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/autorite-full-pipeline.yml) |
+| **Souverix Vigie** | AI Intelligence Engine | [![Souverix Vigie Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/vigie-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/vigie-full-pipeline.yml) |
+| **Souverix Vigile** | Observability & Audit | [![Souverix Vigile Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/vigile-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/vigile-full-pipeline.yml) |
+| **Souverix Federation** | Inter-domain Control | [![Souverix Federation Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/federation-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/federation-full-pipeline.yml) |
+| **Souverix Gouverne** | Policy & Control Plane | [![Souverix Gouverne Full Pipeline](https://github.com/dasmlab/souverix/actions/workflows/gouverne-full-pipeline.yml/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/gouverne-full-pipeline.yml) |
 
 **Documentation**: [MkDocs Site](https://dasmlab.github.io/souverix/) | [Build Docs](https://github.com/dasmlab/souverix/actions/workflows/pages.yml)
 
