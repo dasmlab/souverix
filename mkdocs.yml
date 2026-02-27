@@ -95,6 +95,11 @@ nav:
           - Getting Started: en/operations/getting-started.md
           - Configuration: en/operations/configuration.md
           - Observability: en/operations/observability.md
+          - Fleet Monitoring: en/operations/fleet-monitoring.md
+          - Lifecycle Manager: en/operations/lifecycle-manager.md
+          - Connectivity Manager: en/operations/connectivity-manager.md
+          - Multi-Master Control: en/operations/multi-master.md
+          - Digital Twin Service: en/operations/digital-twin.md
 
   - Français (QC):
       - Aperçu: fr/index.md
