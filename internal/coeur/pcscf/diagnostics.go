@@ -91,7 +91,7 @@ func (d *DiagnosticServer) diagnosticMiddleware() gin.HandlerFunc {
 
 // handleHealth handles health check
 func (d *DiagnosticServer) handleHealth(c *gin.Context) {
-	health := d.pcscf.Health()
+	health := d.pcscf.BaseNode.Health()
 	c.JSON(http.StatusOK, gin.H{
 		"status":    health.Status,
 		"component": "pcscf",
@@ -101,8 +101,8 @@ func (d *DiagnosticServer) handleHealth(c *gin.Context) {
 
 // handleStatus handles status check
 func (d *DiagnosticServer) handleStatus(c *gin.Context) {
-	health := d.pcscf.Health()
-	metrics := d.pcscf.Metrics()
+	health := d.pcscf.BaseNode.Health()
+	metrics := d.pcscf.BaseNode.Metrics()
 
 	status := map[string]interface{}{
 		"health":  health,
@@ -123,7 +123,7 @@ func (d *DiagnosticServer) handleInfo(c *gin.Context) {
 	info := map[string]interface{}{
 		"component": "pcscf",
 		"version":   "dev",
-		"name":      d.pcscf.Name(),
+		"name":      d.pcscf.BaseNode.Name(),
 		"config":    d.pcscf.config,
 	}
 
@@ -132,7 +132,7 @@ func (d *DiagnosticServer) handleInfo(c *gin.Context) {
 
 // handleMetrics handles metrics request
 func (d *DiagnosticServer) handleMetrics(c *gin.Context) {
-	metrics := d.pcscf.Metrics()
+	metrics := d.pcscf.BaseNode.Metrics()
 	c.JSON(http.StatusOK, metrics)
 }
 
@@ -163,7 +163,7 @@ func (d *DiagnosticServer) handleRunTests(c *gin.Context) {
 		{
 			name: "health_check",
 			test: func() (bool, string) {
-				health := d.pcscf.Health()
+				health := d.pcscf.BaseNode.Health()
 				return health.Status == "healthy" || health.Status == "degraded",
 					fmt.Sprintf("health status: %s", health.Status)
 			},
@@ -171,7 +171,7 @@ func (d *DiagnosticServer) handleRunTests(c *gin.Context) {
 		{
 			name: "metrics_available",
 			test: func() (bool, string) {
-				metrics := d.pcscf.Metrics()
+				metrics := d.pcscf.BaseNode.Metrics()
 				return metrics.MessagesProcessed >= 0, "metrics should be available"
 			},
 		},
