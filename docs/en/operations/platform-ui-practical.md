@@ -369,8 +369,8 @@ You need a consistent command lifecycle with:
 
 #### Step 0 — User Issues Command
 
-1. UI generates `commandId` (ULID) as idempotency key
-2. `POST` to `/commands` returns `{ accepted, trackingId }`
+- UI generates `commandId` (ULID) as idempotency key
+- `POST` to `/commands` returns `{ accepted, trackingId }`
 
 #### Step 1 — Immediate Feedback (Toast + Command Drawer)
 
@@ -607,11 +607,11 @@ export default defineComponent({
 
 ## Next Steps
 
-1. Implement SSE endpoints for all core topics
-2. Build NodeRowVM/NodeDetailVM split
-3. Create command tracking infrastructure
-4. Build command UI components
-5. Add attention queue integration
+- Implement SSE endpoints for all core topics
+- Build NodeRowVM/NodeDetailVM split
+- Create command tracking infrastructure
+- Build command UI components
+- Add attention queue integration
 
 ---
 
