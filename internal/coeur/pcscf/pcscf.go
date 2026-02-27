@@ -6,7 +6,7 @@
 // See docs/DESIGN_PHILOSOPHY.md for SDLC methodology
 package pcscf
 
-// 🚀 Triggering P-CSCF container build
+// 🚀 Triggering P-CSCF container build with Kaniko
 import (
 	"bytes"
 	"context"
