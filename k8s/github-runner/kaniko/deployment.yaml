@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-actions-runner-kaniko
+  namespace: github-runner
+  labels:
+    app: github-actions-runner-kaniko
+    project: souverix
+    component: ci-cd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-actions-runner-kaniko
+  template:
+    metadata:
+      labels:
+        app: github-actions-runner-kaniko
+        project: souverix
+        component: ci-cd
+    spec:
+      serviceAccountName: github-runner-sa
+      imagePullSecrets:
+      - name: dasmlab-ghcr-pull
+      securityContext:
+        runAsUser: 0  # Run as root for Kaniko
+        runAsGroup: 0
+        fsGroup: 0
+      containers:
+      - name: runner
+        image: ghcr.io/dasmlab/dasmlab-ci-cd-kaniko-agent:latest
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: false  # Kaniko doesn't need privileged mode
+          runAsUser: 0  # Run as root - Kaniko works as root
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-runner-secrets
+              key: github_token
+        - name: GITHUB_REPO_URL
+          value: "https://github.com/dasmlab"
+        - name: RUNNER_NAME
+          value: "2026-prod-3"  # Kaniko runner
+        - name: RUNNER_LABELS
+          value: "self-hosted,linux,x64,ocp-sno,kaniko"
+        - name: RUNNER_EPHEMERAL
+          value: "false"
+        - name: RUNNER_DISABLE_AUTO_UPDATE
+          value: "true"
+        - name: REGISTRY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: registry-secrets
+              key: password
+              optional: true
+        volumeMounts:
+        - name: workspace
+          mountPath: /home/runner/_work
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+      
+      volumes:
+      - name: workspace
+        emptyDir: {}
+      restartPolicy: Always

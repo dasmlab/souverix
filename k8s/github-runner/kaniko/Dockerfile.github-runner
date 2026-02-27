@@ -1,0 +1,29 @@
+# GitHub Actions Runner with Kaniko support
+# For Kubernetes-based builds in OCP
+# Based on actions/runner with Kaniko integration
+
+FROM gcr.io/kaniko-project/executor:latest AS kaniko
+
+FROM docker.io/myoung34/github-runner:latest
+
+# Copy Kaniko executor (main binary)
+COPY --from=kaniko /kaniko/executor /kaniko/executor
+
+# Set Kaniko environment
+ENV PATH="/kaniko:${PATH}"
+ENV DOCKER_CONFIG=/kaniko/.docker
+ENV SSL_CERT_DIR=/kaniko/ssl/certs
+
+# Create Kaniko directories
+RUN mkdir -p /kaniko/.docker /kaniko/ssl/certs
+
+# Install additional tools if needed
+RUN apt-get update && apt-get install -y \
+    curl \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Kaniko works as root, which matches our runner setup
+USER root
+
+WORKDIR /home/runner
