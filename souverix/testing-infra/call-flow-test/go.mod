@@ -7,4 +7,4 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 )
 
-replace github.com/dasmlab/ims => ../../../
+replace github.com/dasmlab/ims => /home/dasm/org-dasmlab/ims/souverix
