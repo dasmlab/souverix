@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/dasmlab/ims/components/common/diagnostics"
+	"github.com/dasmlab/souverix/common/diagnostics"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )

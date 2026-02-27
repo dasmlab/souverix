@@ -8,14 +8,11 @@ RUN apk add --no-cache git &&     go install github.com/swaggo/swag/cmd/swag@lat
 ARG goproxy=https://proxy.golang.org
 ENV GOPROXY=$goproxy
 
-# Copy common packages first (needed for imports)
-COPY ../../common/ ./components/common/
-
 # Copy app files
-COPY app/go.mod app/go.sum* ./
+COPY components/coeur/bgcf/app/go.mod components/coeur/bgcf/app/go.sum* ./
 RUN go mod download && go mod tidy
 
-COPY app/ ./
+COPY components/coeur/bgcf/app/ ./
 
 RUN if grep -q "@title\|@swagger" main.go 2>/dev/null; then     /go/bin/swag init --generalInfo main.go --output docs --parseDependency --parseInternal || echo "Swagger skipped";     else echo "No Swagger annotations";     fi
 
