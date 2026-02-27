@@ -98,6 +98,7 @@ nav:
           - Fleet Monitoring: en/operations/fleet-monitoring.md
           - IBCF Fleet UI & Lifecycle: en/operations/ibcf-fleet-ui-lifecycle.md
           - Frontend Architecture: en/operations/frontend-architecture.md
+          - Platform UI Architecture: en/operations/platform-ui-architecture.md
           - Lifecycle Manager: en/operations/lifecycle-manager.md
           - Connectivity Manager: en/operations/connectivity-manager.md
           - Multi-Master Control: en/operations/multi-master.md
