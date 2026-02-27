@@ -96,6 +96,7 @@ nav:
           - Configuration: en/operations/configuration.md
           - Observability: en/operations/observability.md
           - Fleet Monitoring: en/operations/fleet-monitoring.md
+          - IBCF Fleet UI & Lifecycle: en/operations/ibcf-fleet-ui-lifecycle.md
           - Lifecycle Manager: en/operations/lifecycle-manager.md
           - Connectivity Manager: en/operations/connectivity-manager.md
           - Multi-Master Control: en/operations/multi-master.md
