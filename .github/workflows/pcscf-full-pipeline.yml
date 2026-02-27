@@ -21,9 +21,9 @@ env:
 jobs:
   # PHASE 1: BUILD
   build:
-    name: Build Container (Podman)
+    name: Build Container (Buildah)
     runs-on: self-hosted
-    # Note: Using Podman/Buildah - no Docker daemon or socket needed!
+    # Note: Using Buildah - daemonless, designed for root/rootless builds
     outputs:
       image-tag: ${{ steps.build.outputs.image-tag }}
       image-digest: ${{ steps.build.outputs.image-digest }}
@@ -34,40 +34,37 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Note: Using Podman/Buildah - no daemon or socket needed!
+      # Note: Using Buildah - daemonless, designed for root/rootless builds
 
-      - name: Check for Podman/Buildah
-        id: podman-check
+      - name: Check for Buildah
+        id: buildah-check
         run: |
-          if command -v podman &> /dev/null; then
-            podman --version
-            echo "✅ Podman is available"
-            echo "podman_available=true" >> $GITHUB_OUTPUT
-          elif command -v buildah &> /dev/null; then
+          if command -v buildah &> /dev/null; then
             buildah --version
             echo "✅ Buildah is available"
-            echo "podman_available=true" >> $GITHUB_OUTPUT
+            echo "buildah_available=true" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Podman/Buildah not available"
-            echo "podman_available=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Buildah not available"
+            echo "buildah_available=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Login to Container Registry
-        if: steps.podman-check.outputs.podman_available == 'true'
+        if: steps.buildah-check.outputs.buildah_available == 'true'
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ${{ env.REGISTRY }} \
+          echo "${{ secrets.GITHUB_TOKEN }}" | buildah login \
             --username ${{ github.actor }} \
-            --password-stdin
+            --password-stdin \
+            ${{ env.REGISTRY }}
 
-      - name: Build and push with Podman
-        if: steps.podman-check.outputs.podman_available == 'true'
+      - name: Build and push with Buildah
+        if: steps.buildah-check.outputs.buildah_available == 'true'
         id: build
         run: |
           IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
           LATEST_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           
-          # Build with Podman (daemonless, no socket needed!)
-          podman build \
+          # Build with Buildah (daemonless, designed for rootless/root builds)
+          buildah build \
             --file Dockerfile.pcscf \
             --build-arg COMPONENT=${{ env.COMPONENT }} \
             --build-arg VERSION=${{ github.sha }} \
@@ -76,24 +73,27 @@ jobs:
             .
           
           # Push images
-          podman push "$IMAGE_TAG"
-          podman push "$LATEST_TAG"
+          buildah push "$IMAGE_TAG" "docker://$IMAGE_TAG"
+          buildah push "$LATEST_TAG" "docker://$LATEST_TAG"
+          
+          # Get image digest
+          IMAGE_DIGEST=$(buildah inspect --format '{{.ImageID}}' "$IMAGE_TAG")
           
           echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "image-digest=$(podman inspect --format '{{.Id}}' $IMAGE_TAG)" >> $GITHUB_OUTPUT
+          echo "image-digest=$IMAGE_DIGEST" >> $GITHUB_OUTPUT
 
-      - name: Skip build (Podman not available)
-        if: steps.podman-check.outputs.podman_available != 'true'
+      - name: Skip build (Buildah not available)
+        if: steps.buildah-check.outputs.buildah_available != 'true'
         run: |
           echo "## Build Phase Skipped" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ Podman/Buildah not available" >> $GITHUB_STEP_SUMMARY
-          echo "Please ensure Podman or Buildah is installed in the runner image" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Buildah not available" >> $GITHUB_STEP_SUMMARY
+          echo "Please ensure Buildah is installed in the runner image" >> $GITHUB_STEP_SUMMARY
 
       - name: Build status
-        if: steps.podman-check.outputs.podman_available == 'true'
+        if: steps.buildah-check.outputs.buildah_available == 'true'
         run: |
           echo "## Build Phase Complete" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Container built and pushed with Podman" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Container built and pushed with Buildah" >> $GITHUB_STEP_SUMMARY
           echo "📦 Image: ${{ steps.build.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
           echo "🔖 Digest: ${{ steps.build.outputs.image-digest }}" >> $GITHUB_STEP_SUMMARY
 
@@ -102,7 +102,7 @@ jobs:
     name: Unit Test via Diagnostic API
     runs-on: self-hosted
     needs: build
-    # Note: Using Podman - no Docker daemon needed
+    # Note: Using Buildah - daemonless, designed for root/rootless builds
     outputs:
       test-status: ${{ steps.test.outputs.status }}
       test-results: ${{ steps.test.outputs.results }}
@@ -111,33 +111,58 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check for Podman
-        id: podman-check
+      - name: Check for Buildah/Podman
+        id: container-check
         run: |
-          if command -v podman &> /dev/null; then
+          if command -v buildah &> /dev/null; then
+            buildah --version
+            echo "container_available=true" >> $GITHUB_OUTPUT
+            echo "runtime=buildah" >> $GITHUB_OUTPUT
+          elif command -v podman &> /dev/null; then
             podman --version
-            echo "podman_available=true" >> $GITHUB_OUTPUT
+            echo "container_available=true" >> $GITHUB_OUTPUT
+            echo "runtime=podman" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Podman not available"
-            echo "podman_available=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Buildah/Podman not available"
+            echo "container_available=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Pull built image
-        if: steps.podman-check.outputs.podman_available == 'true' && needs.build.outputs.image-tag != ''
+        if: steps.container-check.outputs.container_available == 'true' && needs.build.outputs.image-tag != ''
         run: |
-          podman pull ${{ needs.build.outputs.image-tag }}
+          if [ "${{ steps.container-check.outputs.runtime }}" = "buildah" ]; then
+            buildah pull ${{ needs.build.outputs.image-tag }}
+          else
+            podman pull ${{ needs.build.outputs.image-tag }}
+          fi
 
       - name: Start container with diagnostics
-        if: steps.podman-check.outputs.podman_available == 'true'
+        if: steps.container-check.outputs.container_available == 'true'
         id: start-container
         run: |
-          CONTAINER_ID=$(podman run -d \
-            -p 8081:8081 \
-            -e DIAGNOSTICS_ENABLED=true \
-            -e DIAGNOSTICS_ADDR=:8081 \
-            -e LOG_LEVEL=error \
-            ${{ needs.build.outputs.image-tag }})
-          echo "container_id=$CONTAINER_ID" >> $GITHUB_OUTPUT
+          if [ "${{ steps.container-check.outputs.runtime }}" = "buildah" ]; then
+            # Buildah doesn't run containers, use podman if available, or skip
+            if command -v podman &> /dev/null; then
+              CONTAINER_ID=$(podman run -d \
+                -p 8081:8081 \
+                -e DIAGNOSTICS_ENABLED=true \
+                -e DIAGNOSTICS_ADDR=:8081 \
+                -e LOG_LEVEL=error \
+                ${{ needs.build.outputs.image-tag }})
+              echo "container_id=$CONTAINER_ID" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️ Cannot run container - need podman for runtime"
+              exit 1
+            fi
+          else
+            CONTAINER_ID=$(podman run -d \
+              -p 8081:8081 \
+              -e DIAGNOSTICS_ENABLED=true \
+              -e DIAGNOSTICS_ADDR=:8081 \
+              -e LOG_LEVEL=error \
+              ${{ needs.build.outputs.image-tag }})
+            echo "container_id=$CONTAINER_ID" >> $GITHUB_OUTPUT
+          fi
           
           # Wait for container to be ready
           echo "Waiting for container to start..."
@@ -150,7 +175,7 @@ jobs:
           done
 
       - name: Run unit tests via diagnostic API
-        if: steps.podman-check.outputs.podman_available == 'true'
+        if: steps.container-check.outputs.container_available == 'true'
         id: test
         run: |
           echo "Running unit tests via diagnostic API..."
@@ -192,28 +217,30 @@ jobs:
           retention-days: 30
 
       - name: Cleanup container
-        if: always() && steps.podman-check.outputs.podman_available == 'true'
+        if: always() && steps.container-check.outputs.container_available == 'true'
         run: |
-          podman stop ${{ steps.start-container.outputs.container_id }} || true
-          podman rm ${{ steps.start-container.outputs.container_id }} || true
+          if command -v podman &> /dev/null; then
+            podman stop ${{ steps.start-container.outputs.container_id }} || true
+            podman rm ${{ steps.start-container.outputs.container_id }} || true
+          fi
 
-      - name: Skip unit tests (Podman not available)
-        if: steps.podman-check.outputs.podman_available != 'true'
+      - name: Skip unit tests (Container runtime not available)
+        if: steps.container-check.outputs.container_available != 'true'
         run: |
           echo "## Unit Test Phase Skipped" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ Podman not available" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Buildah/Podman not available" >> $GITHUB_STEP_SUMMARY
           echo "status=skip" >> $GITHUB_OUTPUT
-          echo "results={\"status\":\"skip\",\"message\":\"Podman not available\"}" >> $GITHUB_OUTPUT
+          echo "results={\"status\":\"skip\",\"message\":\"Container runtime not available\"}" >> $GITHUB_OUTPUT
 
       - name: Test status summary
         if: always()
         run: |
           echo "## Unit Test Phase Complete" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.podman-check.outputs.podman_available }}" = "true" ]; then
+          if [ "${{ steps.container-check.outputs.container_available }}" = "true" ]; then
             echo "Status: ${{ steps.test.outputs.status }}" >> $GITHUB_STEP_SUMMARY
             echo "Results: ${{ steps.test.outputs.results }}" >> $GITHUB_STEP_SUMMARY
           else
-            echo "Status: skipped (Podman not available)" >> $GITHUB_STEP_SUMMARY
+            echo "Status: skipped (Container runtime not available)" >> $GITHUB_STEP_SUMMARY
           fi
 
   # PHASE 3: PUBLISH (Tag and Trigger System Test)
@@ -235,11 +262,12 @@ jobs:
           TAG="test-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA:0:7}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           
-          # Tag the image with Podman
-          podman pull ${{ needs.build.outputs.image-tag }}
-          podman tag ${{ needs.build.outputs.image-tag }} \
+          # Tag the image with Buildah
+          buildah pull ${{ needs.build.outputs.image-tag }}
+          buildah tag ${{ needs.build.outputs.image-tag }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG
-          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG
+          buildah push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG" \
+            "docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$TAG"
           
           echo "✅ Tagged and pushed: $TAG"
 
@@ -316,14 +344,16 @@ jobs:
           STABLE_TAG="stable-$(date +%Y%m%d)"
           RELEASE_TAG="released-${GITHUB_SHA:0:7}"
           
-          podman pull ${{ needs.build.outputs.image-tag }}
-          podman tag ${{ needs.build.outputs.image-tag }} \
+          buildah pull ${{ needs.build.outputs.image-tag }}
+          buildah tag ${{ needs.build.outputs.image-tag }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$STABLE_TAG
-          podman tag ${{ needs.build.outputs.image-tag }} \
+          buildah tag ${{ needs.build.outputs.image-tag }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$RELEASE_TAG
           
-          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$STABLE_TAG
-          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$RELEASE_TAG
+          buildah push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$STABLE_TAG" \
+            "docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$STABLE_TAG"
+          buildah push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$RELEASE_TAG" \
+            "docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$RELEASE_TAG"
           
           echo "✅ Tagged as stable: $STABLE_TAG"
           echo "✅ Tagged as released: $RELEASE_TAG"
