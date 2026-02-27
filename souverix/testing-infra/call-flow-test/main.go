@@ -15,9 +15,9 @@ import (
 )
 
 func main() {
-	fmt.Println("=")
+	fmt.Println("========================================")
 	fmt.Println("Souverix Coeur - Basic SIP INVITE Call Flow Test")
-	fmt.Println("=")
+	fmt.Println("========================================")
 	fmt.Println()
 
 	// Initialize components
@@ -98,6 +98,8 @@ func testIMS2IMS(pcscf *pcscfHandler.Handler, icscf *icscfHandler.Handler, scscf
 	logger.Printf("S-CSCF -> Destination: ACK")
 
 	fmt.Println("✅ IMS-to-IMS call flow completed successfully")
+	_ = ringing
+	_ = ok
 }
 
 func testIMS2PSTN(pcscf *pcscfHandler.Handler, icscf *icscfHandler.Handler, scscf *scscfHandler.Handler, bgcf *bgcfHandler.Handler, mgcf *mgcfHandler.Handler, logger *log.Logger) {
@@ -176,4 +178,6 @@ func testIMS2PSTN(pcscf *pcscfHandler.Handler, icscf *icscfHandler.Handler, scsc
 	logger.Printf("MGCF -> PSTN: ISUP ACK")
 
 	fmt.Println("✅ IMS-to-PSTN call flow completed successfully")
+	_ = ringing
+	_ = ok
 }
