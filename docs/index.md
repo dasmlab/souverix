@@ -1,5 +1,16 @@
 # Souverix Documentation
 
+<div class="banner-crest" markdown="1">
+<div class="banner-crest-logo">
+<img src="assets/images/crest-orig-34x48.svg" alt="Souverix Crest" />
+</div>
+<div class="banner-crest-title">
+Souverix Platform
+</div>
+</div>
+
+---
+
 **Souverix** est une **plateforme de signalisation souveraine**, **nativement IA**, conçue pour des environnements **opérateurs** et **défense**. Développée en Golang moderne, Souverix est une réécriture architecturale propre visant la **performance CPS**, la **maîtrise des frontières d'interconnexion**, et la **souveraineté cryptographique**.
 
 Souverix traite la signalisation comme une infrastructure stratégique :
