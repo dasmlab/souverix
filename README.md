@@ -11,6 +11,12 @@
 | **Souverix Mandat** | Lawful Intercept | [![Mandat Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Mandat%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/mandat-full-pipeline.yml) |
 | **LI** | Souverix Mandat (Lawful Intercept) | *Part of Mandat* |
 | **Souverix Priorite** | Emergency & Priority Services | [![Priorite Pipeline](https://github.com/dasmlab/souverix/workflows/Souverix%20Priorite%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/priorite-full-pipeline.yml) |
+| **Souverix Relais** | Media Relay Engine (RTP proxy, SRTP, NAT traversal) | *Coming soon* |
+| **Souverix Autorite** | PKI / HSM / Vault (Cryptographic authority) | *Coming soon* |
+| **Souverix Vigie** | AI Intelligence Engine | *Coming soon* |
+| **Souverix Vigile** | Observability & Audit | *Coming soon* |
+| **Souverix Federation** | Inter-domain Control | *Coming soon* |
+| **Souverix Gouverne** | Policy & Control Plane | *Coming soon* |
 
 **Documentation**: [MkDocs Site](https://dasmlab.github.io/souverix/) | [Build Docs](https://github.com/dasmlab/souverix/actions/workflows/pages.yml)
 
