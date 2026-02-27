@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	
+
+	"github.com/dasmlab/ims/components/common/diagnostics"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,32 +19,58 @@ var (
 	gitCommit = "unknown"
 )
 
-// @title Souverix Hss Diagnostic API
+// @title Souverix HSS Diagnostic API
 // @version 1.0
-// @description Diagnostic endpoints for Souverix Hss
-// @host localhost:8081
+// @description Diagnostic endpoints for Souverix HSS
+// @host localhost:8085
 // @BasePath /
 func main() {
-	log := logrus.New()
-	log.SetLevel(logrus.InfoLevel)
-	log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-	
-	log.WithFields(logrus.Fields{
-		"component": "Souverix Hss",
+	logger := logrus.New()
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+
+	logger.WithFields(logrus.Fields{
+		"component": "Souverix HSS",
 		"version":   version,
 		"build":     gitCommit,
-	}).Info("Souverix - Souverix Hss - Version: " + version + " Build: " + gitCommit)
-	
-	// Hss stub - will be implemented later
-	log.Info("Hss component started (stub)")
-	
+	}).Info("Souverix - Souverix HSS - Version: " + version + " Build: " + gitCommit)
+
+	// Initialize Gin router
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+	router.Use(gin.LoggerWithWriter(logger.Writer()))
+	router.Use(gin.Recovery())
+
+	// Register diagnostic endpoints
+	diag := diagnostics.New("Souverix HSS", version, buildTime, gitCommit, logger)
+	diag.RegisterRoutes(router)
+
+	// Create HTTP server
+	srv := &http.Server{
+		Addr:    ":8085",
+		Handler: router,
+	}
+
+	// Start server in goroutine
+	go func() {
+		logger.Info("Starting diagnostic server on :8085")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.WithError(err).Fatal("failed to start diagnostic server")
+		}
+	}()
+
+	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	
-	log.Info("shutting down Souverix Hss...")
+
+	logger.Info("shutting down Souverix HSS...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_ = shutdownCtx
-	log.Info("Souverix Hss stopped")
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("error during shutdown")
+	}
+
+	logger.Info("Souverix HSS stopped")
 }

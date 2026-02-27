@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	
-	"github.com/dasmlab/ims/components/coeur/mgcf/app/internal/mgcf"
+
+	"github.com/dasmlab/ims/components/common/diagnostics"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,35 +22,55 @@ var (
 // @title Souverix MGCF Diagnostic API
 // @version 1.0
 // @description Diagnostic endpoints for Souverix MGCF
-// @host localhost:8081
+// @host localhost:8086
 // @BasePath /
 func main() {
 	logger := logrus.New()
 	logger.SetLevel(logrus.InfoLevel)
 	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-	
+
 	logger.WithFields(logrus.Fields{
 		"component": "Souverix MGCF",
 		"version":   version,
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix MGCF - Version: " + version + " Build: " + gitCommit)
-	
-	// Create MGCF handler
-	stdLogger := log.New(os.Stdout, "[MGCF] ", log.LstdFlags)
-	handler := mgcf.NewHandler(stdLogger)
 
-	// Start MGCF
-	logger.Info("MGCF component started")
-	_ = handler
+	// Initialize Gin router
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+	router.Use(gin.LoggerWithWriter(logger.Writer()))
+	router.Use(gin.Recovery())
+
+	// Register diagnostic endpoints
+	diag := diagnostics.New("Souverix MGCF", version, buildTime, gitCommit, logger)
+	diag.RegisterRoutes(router)
+
+	// Create HTTP server
+	srv := &http.Server{
+		Addr:    ":8086",
+		Handler: router,
+	}
+
+	// Start server in goroutine
+	go func() {
+		logger.Info("Starting diagnostic server on :8086")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.WithError(err).Fatal("failed to start diagnostic server")
+		}
+	}()
 
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	
+
 	logger.Info("shutting down Souverix MGCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_ = shutdownCtx
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("error during shutdown")
+	}
+
 	logger.Info("Souverix MGCF stopped")
 }

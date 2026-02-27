@@ -2,14 +2,14 @@ package main
 
 import (
 	"context"
-	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	
-	"github.com/dasmlab/ims/components/common/hss"
-	"github.com/dasmlab/ims/components/coeur/scscf/app/internal/scscf"
+
+	"github.com/dasmlab/ims/components/common/diagnostics"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,43 +19,58 @@ var (
 	gitCommit = "unknown"
 )
 
-// @title Souverix S-CSCF Diagnostic API
+// @title Souverix SC-SCF Diagnostic API
 // @version 1.0
-// @description Diagnostic endpoints for Souverix S-CSCF
-// @host localhost:8081
+// @description Diagnostic endpoints for Souverix SC-SCF
+// @host localhost:8087
 // @BasePath /
 func main() {
 	logger := logrus.New()
 	logger.SetLevel(logrus.InfoLevel)
 	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-	
+
 	logger.WithFields(logrus.Fields{
-		"component": "Souverix S-CSCF",
+		"component": "Souverix SC-SCF",
 		"version":   version,
 		"build":     gitCommit,
-	}).Info("Souverix - Souverix S-CSCF - Version: " + version + " Build: " + gitCommit)
-	
-	// Create HSS client
-	hssClient := hss.NewHSSClient()
+	}).Info("Souverix - Souverix SC-SCF - Version: " + version + " Build: " + gitCommit)
 
-	// Create S-CSCF handler
-	stdLogger := log.New(os.Stdout, "[S-CSCF] ", log.LstdFlags)
-	handler := scscf.NewHandler(hssClient, "bgcf.example.com:5060", stdLogger)
+	// Initialize Gin router
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+	router.Use(gin.LoggerWithWriter(logger.Writer()))
+	router.Use(gin.Recovery())
 
-	// Start S-CSCF
-	logger.Info("S-CSCF component started")
-	logger.Info("HSS client initialized")
-	logger.Info("BGCF address: bgcf.example.com:5060")
-	_ = handler
+	// Register diagnostic endpoints
+	diag := diagnostics.New("Souverix SC-SCF", version, buildTime, gitCommit, logger)
+	diag.RegisterRoutes(router)
+
+	// Create HTTP server
+	srv := &http.Server{
+		Addr:    ":8087",
+		Handler: router,
+	}
+
+	// Start server in goroutine
+	go func() {
+		logger.Info("Starting diagnostic server on :8087")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.WithError(err).Fatal("failed to start diagnostic server")
+		}
+	}()
 
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	
-	logger.Info("shutting down Souverix S-CSCF...")
+
+	logger.Info("shutting down Souverix SC-SCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_ = shutdownCtx
-	logger.Info("Souverix S-CSCF stopped")
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("error during shutdown")
+	}
+
+	logger.Info("Souverix SC-SCF stopped")
 }

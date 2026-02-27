@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/dasmlab/ims/components/coeur/bgcf/app/internal/bgcf"
+	"github.com/dasmlab/ims/components/common/diagnostics"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,7 +22,7 @@ var (
 // @title Souverix BGCF Diagnostic API
 // @version 1.0
 // @description Diagnostic endpoints for Souverix BGCF
-// @host localhost:8081
+// @host localhost:8086
 // @BasePath /
 func main() {
 	logger := logrus.New()
@@ -34,13 +35,29 @@ func main() {
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix BGCF - Version: " + version + " Build: " + gitCommit)
 
-	// Create BGCF handler
-	stdLogger := log.New(os.Stdout, "[BGCF] ", log.LstdFlags)
-	handler := bgcf.NewHandler(stdLogger)
+	// Initialize Gin router
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+	router.Use(gin.LoggerWithWriter(logger.Writer()))
+	router.Use(gin.Recovery())
 
-	// Start BGCF
-	logger.Info("BGCF component started")
-	_ = handler
+	// Register diagnostic endpoints
+	diag := diagnostics.New("Souverix BGCF", version, buildTime, gitCommit, logger)
+	diag.RegisterRoutes(router)
+
+	// Create HTTP server
+	srv := &http.Server{
+		Addr:    ":8086",
+		Handler: router,
+	}
+
+	// Start server in goroutine
+	go func() {
+		logger.Info("Starting diagnostic server on :8086")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.WithError(err).Fatal("failed to start diagnostic server")
+		}
+	}()
 
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
@@ -50,6 +67,10 @@ func main() {
 	logger.Info("shutting down Souverix BGCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_ = shutdownCtx
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("error during shutdown")
+	}
+
 	logger.Info("Souverix BGCF stopped")
 }
