@@ -96,6 +96,7 @@ spec:
         - --storage-driver=vfs
         - --data-root=/var/lib/docker
         - --group=0
+        - --group=0
         resources:
           requests:
             memory: "512Mi"
