@@ -22,7 +22,7 @@ var (
 // @title Souverix HSS Diagnostic API
 // @version 1.0
 // @description Diagnostic endpoints for Souverix HSS
-// @host localhost:8085
+// @host localhost:8086
 // @BasePath /
 func main() {
 	logger := logrus.New()
@@ -47,13 +47,13 @@ func main() {
 
 	// Create HTTP server
 	srv := &http.Server{
-		Addr:    ":8085",
+		Addr:    ":8086",
 		Handler: router,
 	}
 
 	// Start server in goroutine
 	go func() {
-		logger.Info("Starting diagnostic server on :8085")
+		logger.Info("Starting diagnostic server on :8086")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.WithError(err).Fatal("failed to start diagnostic server")
 		}

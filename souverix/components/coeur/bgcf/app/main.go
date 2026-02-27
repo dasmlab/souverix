@@ -22,7 +22,7 @@ var (
 // @title Souverix BGCF Diagnostic API
 // @version 1.0
 // @description Diagnostic endpoints for Souverix BGCF
-// @host localhost:8086
+// @host localhost:8084
 // @BasePath /
 func main() {
 	logger := logrus.New()
@@ -47,13 +47,13 @@ func main() {
 
 	// Create HTTP server
 	srv := &http.Server{
-		Addr:    ":8086",
+		Addr:    ":8084",
 		Handler: router,
 	}
 
 	// Start server in goroutine
 	go func() {
-		logger.Info("Starting diagnostic server on :8086")
+		logger.Info("Starting diagnostic server on :8084")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.WithError(err).Fatal("failed to start diagnostic server")
 		}
