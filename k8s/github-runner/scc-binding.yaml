@@ -1,0 +1,34 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: github-runner-scc
+  namespace: github-runner
+  labels:
+    app: github-actions-runner
+    project: souverix
+rules:
+- apiGroups:
+  - security.openshift.io
+  resourceNames:
+  - privileged
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: github-runner-scc-binding
+  namespace: github-runner
+  labels:
+    app: github-actions-runner
+    project: souverix
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: github-runner-scc
+subjects:
+- kind: ServiceAccount
+  name: github-runner-sa
+  namespace: github-runner

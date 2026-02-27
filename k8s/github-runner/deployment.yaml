@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-actions-runner
+  namespace: github-runner
+  labels:
+    app: github-actions-runner
+    project: souverix
+    component: ci-cd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-actions-runner
+  template:
+    metadata:
+      labels:
+        app: github-actions-runner
+        project: souverix
+        component: ci-cd
+    spec:
+      serviceAccountName: github-runner-sa
+      imagePullSecrets:
+      - name: dasmlab-ghcr-pull
+      securityContext:
+        runAsUser: 0  # Run as root for Buildah to work properly
+        runAsGroup: 0
+        fsGroup: 0
+      containers:
+      - name: runner
+        image: ghcr.io/dasmlab/ci-cd-github-runner:latest
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: true  # Required for Buildah to work without user namespace issues
+          runAsUser: 0  # Run as root - Buildah needs this to avoid user namespace problems
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-runner-secrets
+              key: github_token
+        - name: GITHUB_REPO_URL
+          value: "https://github.com/dasmlab"
+        - name: RUNNER_NAME
+          value: "2026-prod-1"  # OCP SNO hostname
+        - name: RUNNER_LABELS
+          value: "self-hosted,linux,x64,ocp-sno"
+        - name: REGISTRY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: registry-secrets
+              key: password
+              optional: true
+        volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+      volumes:
+      - name: workspace
+        emptyDir: {}
+      restartPolicy: Always
