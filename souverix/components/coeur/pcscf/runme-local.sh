@@ -6,17 +6,18 @@ set -euo pipefail
 COMPONENT="pcscf"
 PORT="${PORT:-8081}"
 
-SCRIPT_DIR="$(cd "components/coeur/${COMPONENT}"(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "components/coeur/${COMPONENT}"{SCRIPT_DIR}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "${SCRIPT_DIR}"
 
 echo "🚀 Starting ${COMPONENT} component locally..."
 echo ""
 
 # Build if binary doesn't exist
-if [[ ! -f "app/${COMPONENT}" ]] && [[ ! -f "app/main" ]] && [[ ! -f "${COMPONENT}-local" ]]; then
+if [[ ! -f "${COMPONENT}-local" ]] && [[ ! -f "app/${COMPONENT}" ]] && [[ ! -f "app/main" ]]; then
     echo "📦 Building ${COMPONENT}..."
-    cd "components/coeur/${COMPONENT}"/../../
-    go build -o "components/coeur/${COMPONENT}/${COMPONENT}-local" ./main.go || {
+    echo "   Note: Building from souverix root to include common packages..."
+    cd ../../../
+    go build -o "components/coeur/${COMPONENT}/${COMPONENT}-local" "./components/coeur/${COMPONENT}/app/main.go" || {
         echo "❌ Build failed"
         exit 1
     }
