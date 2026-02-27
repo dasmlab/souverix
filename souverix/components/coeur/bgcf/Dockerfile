@@ -8,11 +8,17 @@ RUN apk add --no-cache git &&     go install github.com/swaggo/swag/cmd/swag@lat
 ARG goproxy=https://proxy.golang.org
 ENV GOPROXY=$goproxy
 
-# Copy common module for local replace directive (development)
-COPY common/ ./common/
-
 # Copy app files
 COPY components/coeur/bgcf/app/go.mod components/coeur/bgcf/app/go.sum* ./
+
+# Copy common module - will be used via replace directive
+# The replace directive expects ../../../../common from the app directory
+# Since we're at /app in container, we need to create the path structure
+COPY common/ /common/
+
+# Update replace directive to point to /common in container
+RUN sed -i 's|replace github.com/dasmlab/souverix/common => ../../../../common|replace github.com/dasmlab/souverix/common => /common|g' go.mod
+
 RUN go mod download && go mod tidy
 
 COPY components/coeur/bgcf/app/ ./
