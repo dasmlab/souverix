@@ -7,8 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	vigile "github.com/dasmlab/ims/internal/vigile"
-	gouverneConfig "github.com/dasmlab/ims/internal/gouverne/config"
+	vigile "github.com/dasmlab/ims/components/vigile"
+	gouverneConfig "github.com/dasmlab/ims/components/gouverne/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,11 +36,6 @@ func main() {
 	// Load configuration
 	cfg := gouverneConfig.Load()
 	// Initialize Souverix Vigile (stub)
-	component := vigile.New(cfg, log)
-
-	// Start component
-	ctx := context.Background()
-	if err := component.Start(ctx); err != nil {
 		log.WithError(err).Fatal("failed to start Souverix Vigile")
 	}
 
@@ -55,7 +50,6 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := component.Stop(shutdownCtx); err != nil {
 		log.WithError(err).Error("error during shutdown")
 	}
 

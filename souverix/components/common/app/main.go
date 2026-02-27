@@ -16,9 +16,9 @@ var (
 	gitCommit = "unknown"
 )
 
-// @title Souverix BGCF Diagnostic API
+// @title Souverix Common Diagnostic API
 // @version 1.0
-// @description Diagnostic endpoints for Souverix BGCF
+// @description Common utilities and shared code
 // @host localhost:8081
 // @BasePath /
 func main() {
@@ -27,21 +27,21 @@ func main() {
 	log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 	
 	log.WithFields(logrus.Fields{
-		"component": "Souverix BGCF",
+		"component": "Souverix Common",
 		"version":   version,
 		"build":     gitCommit,
-	}).Info("Souverix - Souverix BGCF - Version: " + version + " Build: " + gitCommit)
+	}).Info("Souverix - Souverix Common - Version: " + version + " Build: " + gitCommit)
 	
-	// BGCF stub - will be implemented later
-	log.Info("BGCF component started (stub)")
+	// Common is a library component - minimal runtime
+	log.Info("Common utilities available")
 	
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	
-	log.Info("shutting down Souverix BGCF...")
+	log.Info("shutting down Souverix Common...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = shutdownCtx
-	log.Info("Souverix BGCF stopped")
+	log.Info("Souverix Common stopped")
 }

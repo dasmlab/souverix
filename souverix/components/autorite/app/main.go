@@ -7,8 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	autorite "github.com/dasmlab/ims/internal/autorite"
-	gouverneConfig "github.com/dasmlab/ims/internal/gouverne/config"
+	autorite "github.com/dasmlab/ims/components/autorite"
+	gouverneConfig "github.com/dasmlab/ims/components/gouverne/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,11 +36,6 @@ func main() {
 	// Load configuration
 	cfg := gouverneConfig.Load()
 	// Initialize Souverix Autorite (stub)
-	component := autorite.New(cfg, log)
-
-	// Start component
-	ctx := context.Background()
-	if err := component.Start(ctx); err != nil {
 		log.WithError(err).Fatal("failed to start Souverix Autorite")
 	}
 
@@ -55,7 +50,6 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := component.Stop(shutdownCtx); err != nil {
 		log.WithError(err).Error("error during shutdown")
 	}
 

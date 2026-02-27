@@ -6,9 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	hssPkg "github.com/dasmlab/ims/internal/coeur/hss"
-	gouverneConfig "github.com/dasmlab/ims/internal/gouverne/config"
+	
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,13 +32,7 @@ func main() {
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix Hss - Version: " + version + " Build: " + gitCommit)
 	
-	cfg := gouverneConfig.Load()
-	component := hssPkg.New(cfg, log)
-	
-	ctx := context.Background()
-	if err := component.Start(ctx); err != nil {
-		log.WithError(err).Fatal("failed to start Souverix Hss")
-	}
+	log.Info("Hss component started (stub)")
 	
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -49,6 +41,6 @@ func main() {
 	log.Info("shutting down Souverix Hss...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	component.Stop(shutdownCtx)
+	_ = shutdownCtx
 	log.Info("Souverix Hss stopped")
 }

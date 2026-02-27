@@ -6,48 +6,41 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	pcscfPkg "github.com/dasmlab/ims/internal/coeur/pcscf"
-	gouverneConfig "github.com/dasmlab/ims/internal/gouverne/config"
+	
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	version   = "dev"
+	buildTime = "unknown"
+	gitCommit = "unknown"
+)
+
+// @title Souverix Pcscf Diagnostic API
+// @version 1.0
+// @description Diagnostic endpoints for Souverix Pcscf
+// @host localhost:8081
+// @BasePath /
 func main() {
-	// Initialize logger
 	log := logrus.New()
 	log.SetLevel(logrus.InfoLevel)
-	log.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp: true,
-	})
-	log.Info("starting P-CSCF component")
-
-	// Load configuration
-	cfg := gouverneConfig.Load()
-	pcscfCfg := pcscfPkg.ConfigFromGouverne(cfg)
-
-	// Create P-CSCF instance
-	pcscf := pcscfPkg.New(pcscfCfg, log)
-
-	// Start P-CSCF
-	ctx := context.Background()
-	if err := pcscf.Start(ctx); err != nil {
-		log.WithError(err).Fatal("failed to start P-CSCF")
-	}
-
-	// Wait for interrupt signal
+	log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+	
+	log.WithFields(logrus.Fields{
+		"component": "Souverix Pcscf",
+		"version":   version,
+		"build":     gitCommit,
+	}).Info("Souverix - Souverix Pcscf - Version: " + version + " Build: " + gitCommit)
+	
+	log.Info("Pcscf component started (stub)")
+	
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-
-	log.Info("shutting down P-CSCF...")
-
-	// Graceful shutdown
+	
+	log.Info("shutting down Souverix Pcscf...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	if err := pcscf.Stop(shutdownCtx); err != nil {
-		log.WithError(err).Error("error during shutdown")
-	}
-
-	log.Info("P-CSCF stopped")
+	_ = shutdownCtx
+	log.Info("Souverix Pcscf stopped")
 }

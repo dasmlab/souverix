@@ -6,9 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	mgcfPkg "github.com/dasmlab/ims/internal/coeur/mgcf"
-	gouverneConfig "github.com/dasmlab/ims/internal/gouverne/config"
+	
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,13 +32,7 @@ func main() {
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix Mgcf - Version: " + version + " Build: " + gitCommit)
 	
-	cfg := gouverneConfig.Load()
-	component := mgcfPkg.New(cfg, log)
-	
-	ctx := context.Background()
-	if err := component.Start(ctx); err != nil {
-		log.WithError(err).Fatal("failed to start Souverix Mgcf")
-	}
+	log.Info("Mgcf component started (stub)")
 	
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -49,6 +41,6 @@ func main() {
 	log.Info("shutting down Souverix Mgcf...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	component.Stop(shutdownCtx)
+	_ = shutdownCtx
 	log.Info("Souverix Mgcf stopped")
 }

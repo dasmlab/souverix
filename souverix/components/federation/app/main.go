@@ -7,8 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	federation "github.com/dasmlab/ims/internal/federation"
-	gouverneConfig "github.com/dasmlab/ims/internal/gouverne/config"
+	federation "github.com/dasmlab/ims/components/federation"
+	gouverneConfig "github.com/dasmlab/ims/components/gouverne/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,11 +36,6 @@ func main() {
 	// Load configuration
 	cfg := gouverneConfig.Load()
 	// Initialize Souverix Federation (stub)
-	component := federation.New(cfg, log)
-
-	// Start component
-	ctx := context.Background()
-	if err := component.Start(ctx); err != nil {
 		log.WithError(err).Fatal("failed to start Souverix Federation")
 	}
 
@@ -55,7 +50,6 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := component.Stop(shutdownCtx); err != nil {
 		log.WithError(err).Error("error during shutdown")
 	}
 

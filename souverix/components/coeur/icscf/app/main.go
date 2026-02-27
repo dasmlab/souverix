@@ -6,9 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	icscfPkg "github.com/dasmlab/ims/internal/coeur/icscf"
-	gouverneConfig "github.com/dasmlab/ims/internal/gouverne/config"
+	
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,13 +32,7 @@ func main() {
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix Icscf - Version: " + version + " Build: " + gitCommit)
 	
-	cfg := gouverneConfig.Load()
-	component := icscfPkg.New(cfg, log)
-	
-	ctx := context.Background()
-	if err := component.Start(ctx); err != nil {
-		log.WithError(err).Fatal("failed to start Souverix Icscf")
-	}
+	log.Info("Icscf component started (stub)")
 	
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -49,6 +41,6 @@ func main() {
 	log.Info("shutting down Souverix Icscf...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	component.Stop(shutdownCtx)
+	_ = shutdownCtx
 	log.Info("Souverix Icscf stopped")
 }

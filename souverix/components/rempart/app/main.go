@@ -7,8 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	rempart "github.com/dasmlab/ims/internal/rempart"
-	gouverneConfig "github.com/dasmlab/ims/internal/gouverne/config"
+	rempart "github.com/dasmlab/ims/components/rempart"
+	gouverneConfig "github.com/dasmlab/ims/components/gouverne/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -58,7 +58,6 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := component.Stop(shutdownCtx); err != nil {
 		log.WithError(err).Error("error during shutdown")
 	}
 
