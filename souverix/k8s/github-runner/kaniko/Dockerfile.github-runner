@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
 # Set Kaniko environment (only for Kaniko builds, not for runner)
 ENV PATH="/kaniko:${PATH}"
 ENV DOCKER_CONFIG=/kaniko/.docker
+
 # Note: Don't set SSL_CERT_DIR globally - it breaks the runner's SSL connections
 # Kaniko will use its own certs, runner will use system certs
 
@@ -63,6 +64,9 @@ RUN chmod +x /home/runner/start-runner.sh && \
 
 # Set PATH to ensure buildah/podman are accessible
 ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}"
+
+RUN chown -R 1000:1000 /kaniko
+RUN chown -R 1000:1000 /kaniko/.docker
 
 # Set entrypoint to startup script
 ENTRYPOINT ["/home/runner/start-runner.sh"]

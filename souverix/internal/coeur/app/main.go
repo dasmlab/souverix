@@ -18,6 +18,14 @@ var (
 	gitCommit = "unknown"
 )
 
+// @title Souverix Coeur Diagnostic API
+// @version 1.0
+// @description Diagnostic and health check endpoints for Souverix Coeur (IMS Core)
+// @termsOfService http://swagger.io/terms/
+// @contact.name Souverix Support
+// @license.name Apache 2.0
+// @host localhost:8081
+// @BasePath /
 func main() {
 	// Initialize logger
 	log := logrus.New()
@@ -35,6 +43,7 @@ func main() {
 
 	// Load configuration
 	cfg := gouverneConfig.Load()
+	
 	// Initialize Coeur component
 	componentCfg := coeur.ConfigFromGouverne(cfg)
 	component := coeur.New(componentCfg, log)

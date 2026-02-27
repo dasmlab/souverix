@@ -29,11 +29,11 @@ GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 # Build with staged cache mounts for faster rebuilds
 ${RUNTIME} build \
     --tag "${app}:${tag}" \
-    --file Dockerfile.coeur \
-    --build-arg COMPONENT=coeur \
+    --file Dockerfile \
     --build-arg VERSION="${VERSION}" \
     --build-arg BUILD_TIME="${BUILD_TIME}" \
     --build-arg GIT_COMMIT="${GIT_COMMIT}" \
+    --build-arg package=. \
     --progress=plain \
     .
 
