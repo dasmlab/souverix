@@ -45,6 +45,10 @@ spec:
           value: "2026-prod-1"  # OCP SNO hostname
         - name: RUNNER_LABELS
           value: "self-hosted,linux,x64,ocp-sno,dind"
+        - name: RUNNER_EPHEMERAL
+          value: "false"
+        - name: RUNNER_DISABLE_AUTO_UPDATE
+          value: "true"
         - name: REGISTRY_PASSWORD
           valueFrom:
             secretKeyRef:
