@@ -41,7 +41,7 @@ spec:
               name: github-runner-secrets
               key: github_token
         - name: REPO_URL
-          value: "https://github.com/dasmlab/souverix"
+          value: "https://github.com/dasmlab"
         - name: RUNNER_NAME
           value: "2026-prod-3"  # Kaniko runner
         - name: RUNNER_LABELS

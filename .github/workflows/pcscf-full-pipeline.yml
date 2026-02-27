@@ -3,13 +3,13 @@ name: P-CSCF Full Pipeline (Build → Test → Publish → System Test → Stabl
 on:
   push:
     paths:
-      - 'internal/coeur/pcscf/**'
-      - 'internal/common/**'
+      - 'souverix/internal/coeur/pcscf/**'
+      - 'souverix/internal/common/**'
       - '.github/workflows/pcscf-full-pipeline.yml'
   pull_request:
     paths:
-      - 'internal/coeur/pcscf/**'
-      - 'internal/common/**'
+      - 'souverix/internal/coeur/pcscf/**'
+      - 'souverix/internal/common/**'
       - '.github/workflows/pcscf-full-pipeline.yml'
   workflow_dispatch:
 
@@ -36,6 +36,7 @@ jobs:
 
       - name: Check for Kaniko
         id: kaniko-check
+        working-directory: souverix
         run: |
           if command -v /kaniko/executor &> /dev/null || command -v kaniko &> /dev/null; then
             /kaniko/executor --version || kaniko --version || echo "Kaniko executor found"
@@ -48,6 +49,7 @@ jobs:
 
       - name: Set up Docker config for Kaniko
         if: steps.kaniko-check.outputs.kaniko_available == 'true'
+        working-directory: souverix
         run: |
           mkdir -p /kaniko/.docker
           echo "{\"auths\":{\"${{ env.REGISTRY }}\":{\"auth\":\"$(echo -n ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64 -w 0)\"}}}" > /kaniko/.docker/config.json
@@ -55,6 +57,7 @@ jobs:
       - name: Build and push with Kaniko
         if: steps.kaniko-check.outputs.kaniko_available == 'true'
         id: build
+        working-directory: souverix
         run: |
           IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
           LATEST_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
@@ -122,6 +125,7 @@ jobs:
           fi
 
       - name: Pull built image
+        working-directory: souverix
         if: steps.container-check.outputs.container_available == 'true' && needs.build.outputs.image-tag != ''
         run: |
           if [ "${{ steps.container-check.outputs.runtime }}" = "buildah" ]; then
@@ -131,6 +135,7 @@ jobs:
           fi
 
       - name: Start container with diagnostics
+        working-directory: souverix
         if: steps.container-check.outputs.container_available == 'true'
         id: start-container
         run: |
@@ -169,6 +174,7 @@ jobs:
           done
 
       - name: Run unit tests via diagnostic API
+        working-directory: souverix
         if: steps.container-check.outputs.container_available == 'true'
         id: test
         run: |

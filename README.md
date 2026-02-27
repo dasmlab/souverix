@@ -2,14 +2,14 @@
 
 ## Build Status
 
-| Component | Build | Tests | Coverage | Lint |
-|-----------|-------|-------|----------|------|
-| **IMS Core** | [![Build](https://github.com/dasmlab/souverix/workflows/Build/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/souverix/workflows/Test/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/test.yml) | [![Coverage](https://codecov.io/gh/dasmlab/souverix/branch/main/graph/badge.svg)](https://codecov.io/gh/dasmlab/souverix) | [![Lint](https://github.com/dasmlab/souverix/workflows/Lint/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/lint.yml) |
-| **IBCF/SIG-GW** | [![Build](https://github.com/dasmlab/souverix/workflows/Build/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/souverix/workflows/Test/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/test.yml) | - | - |
-| **STIR/SHAKEN** | [![Build](https://github.com/dasmlab/souverix/workflows/Build/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/souverix/workflows/Test/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/test.yml) | - | - |
-| **LI/Emergency** | [![Build](https://github.com/dasmlab/souverix/workflows/Build/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/build.yml) | [![Tests](https://github.com/dasmlab/souverix/workflows/Test/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/test.yml) | - | - |
+| Component | Code Name | Build Pipeline |
+|-----------|-----------|----------------|
+| **P-CSCF** | Souverix Coeur (P-CSCF) | [![P-CSCF Pipeline](https://github.com/dasmlab/souverix/workflows/P-CSCF%20Full%20Pipeline/badge.svg)](https://github.com/dasmlab/souverix/actions/workflows/pcscf-full-pipeline.yml) |
+| **IBCF/SIG-GW** | Souverix Rempart | *Coming soon* |
+| **STIR/SHAKEN** | Souverix Rempart (STIR) | *Coming soon* |
+| **LI/Emergency** | Souverix Mandat / Souverix Priorite | *Coming soon* |
 
-**Latest Build**: [View Details](https://github.com/dasmlab/souverix/actions)
+**Documentation**: [MkDocs Site](https://dasmlab.github.io/souverix/) | [Build Docs](https://github.com/dasmlab/souverix/actions/workflows/pages.yml)
 
 ---
 
