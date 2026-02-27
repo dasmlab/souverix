@@ -2,7 +2,7 @@ name: Update README Status
 
 on:
   workflow_run:
-    workflows: ["Build", "Test", "Lint"]
+    workflows: ["P-CSCF Full Pipeline (Build → Test → Publish → System Test → Stable)"]
     types:
       - completed
   schedule:

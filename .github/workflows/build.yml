@@ -1,11 +1,10 @@
 name: Build
 
+# DISABLED: Component-specific pipelines are used instead
+# Use pcscf-full-pipeline.yml for P-CSCF builds
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
   workflow_dispatch:
+    # Disabled - component-specific pipelines are used
 
 env:
   REGISTRY: ghcr.io

@@ -1,17 +1,10 @@
 name: P-CSCF & Common Components CI
 
+# DISABLED: Use pcscf-full-pipeline.yml instead
+# This workflow is kept for reference but disabled
 on:
-  push:
-    paths:
-      - 'internal/coeur/pcscf/**'
-      - 'internal/common/**'
-      - '.github/workflows/pcscf-common.yml'
-  pull_request:
-    paths:
-      - 'internal/coeur/pcscf/**'
-      - 'internal/common/**'
-      - '.github/workflows/pcscf-common.yml'
   workflow_dispatch:
+    # Disabled - use pcscf-full-pipeline.yml for full CI/CD
 
 jobs:
   build-and-test:
