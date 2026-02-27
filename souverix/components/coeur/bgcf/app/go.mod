@@ -39,4 +39,4 @@ require (
 	google.golang.org/protobuf v1.36.9 // indirect
 )
 
-replace github.com/dasmlab/souverix/common => ../../../common
+replace github.com/dasmlab/souverix/common => ../../../../common
