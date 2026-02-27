@@ -44,9 +44,9 @@
 
 .banner-crest-logo img,
 .banner-crest-logo svg {
-    width: 120px !important;
+    width: 60px !important;
     height: auto;
-    max-height: 90px;
+    max-height: 45px;
     filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
     display: block;
 }
@@ -54,7 +54,7 @@
 .banner-crest-title {
     flex: 1;
     color: white !important;
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     text-shadow: 0 2px 8px rgba(0,0,0,0.4);
     letter-spacing: 0.05em;
@@ -70,13 +70,13 @@
     }
     
     .banner-crest-title {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
     
     .banner-crest-logo img,
     .banner-crest-logo svg {
-        width: 100px;
-        max-height: 75px;
+        width: 50px;
+        max-height: 38px;
     }
 }
 
