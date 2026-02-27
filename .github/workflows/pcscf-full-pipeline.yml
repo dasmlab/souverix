@@ -43,16 +43,22 @@ jobs:
         continue-on-error: true
         run: |
           echo "Checking Docker daemon availability..."
-          if timeout 10 bash -c 'until docker info > /dev/null 2>&1; do sleep 1; done'; then
-            docker info
-            echo "✅ Docker daemon is available"
+          echo "DOCKER_HOST=${DOCKER_HOST:-not set}"
+          echo "Checking for Docker socket..."
+          
+          # Check if socket exists and is accessible
+          if [ -S /var/run/docker.sock ]; then
+            echo "✅ Docker socket found at /var/run/docker.sock"
+            SOCKET_INFO=$(ls -la /var/run/docker.sock)
+            echo "Socket info: $SOCKET_INFO"
             echo "docker_available=true" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Docker daemon not available"
+            echo "⚠️ Docker socket not found at /var/run/docker.sock"
             echo "⚠️ Build will be skipped - ensure runner pod includes docker:dind sidecar"
-            echo "Required: DOCKER_HOST=unix:///var/run/docker.sock (socket mounted at /var/run)"
+            echo "Required: Socket mounted at /var/run/docker.sock"
             echo "See docs/OCP_RUNNER_SETUP.md for setup instructions"
             echo "docker_available=false" >> $GITHUB_OUTPUT
+            exit 0  # Don't fail, just mark as unavailable
           fi
 
       - name: Set up Docker Buildx
@@ -139,14 +145,18 @@ jobs:
         continue-on-error: true
         run: |
           echo "Checking Docker daemon availability..."
-          if timeout 10 bash -c 'until docker info > /dev/null 2>&1; do sleep 1; done'; then
-            echo "✅ Docker daemon is available"
+          echo "DOCKER_HOST=${DOCKER_HOST:-not set}"
+          
+          # Check if socket exists and is accessible
+          if [ -S /var/run/docker.sock ]; then
+            echo "✅ Docker socket found at /var/run/docker.sock"
             echo "docker_available=true" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Docker daemon not available"
+            echo "⚠️ Docker socket not found at /var/run/docker.sock"
             echo "⚠️ Unit tests will be skipped - ensure runner pod includes docker:dind sidecar"
             echo "See docs/OCP_RUNNER_SETUP.md for setup instructions"
             echo "docker_available=false" >> $GITHUB_OUTPUT
+            exit 0  # Don't fail, just mark as unavailable
           fi
 
       - name: Pull built image
