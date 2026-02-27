@@ -8,6 +8,9 @@ RUN apk add --no-cache git &&     go install github.com/swaggo/swag/cmd/swag@lat
 ARG goproxy=https://proxy.golang.org
 ENV GOPROXY=$goproxy
 
+# Copy common module for local replace directive (development)
+COPY common/ ./common/
+
 # Copy app files
 COPY components/coeur/bgcf/app/go.mod components/coeur/bgcf/app/go.sum* ./
 RUN go mod download && go mod tidy
