@@ -51,6 +51,9 @@ else
 
     # Set default runner name if not provided
     RUNNER_NAME=${RUNNER_NAME:-"k8s-runner-$(hostname)"}
+    
+    # Set default labels if not provided
+    RUNNER_LABELS=${RUNNER_LABELS:-"self-hosted,linux,x64"}
 
     # Ensure SSL certificates are available for runner
     # The runner needs to connect to GitHub API over HTTPS
@@ -58,8 +61,8 @@ else
     export REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE:-/etc/ssl/certs/ca-certificates.crt}
     export CURL_CA_BUNDLE=${CURL_CA_BUNDLE:-/etc/ssl/certs/ca-certificates.crt}
 
-    # Configure the runner as runner user
-    su runner -c "cd /home/runner && SSL_CERT_DIR=${SSL_CERT_DIR} REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE} CURL_CA_BUNDLE=${CURL_CA_BUNDLE} ./config.sh --url \"$REPO_URL\" --pat \"$GITHUB_TOKEN\" --name \"$RUNNER_NAME\" --work \"_work\" --replace --unattended"
+    # Configure the runner as runner user with labels
+    su runner -c "cd /home/runner && SSL_CERT_DIR=${SSL_CERT_DIR} REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE} CURL_CA_BUNDLE=${CURL_CA_BUNDLE} ./config.sh --url \"$REPO_URL\" --pat \"$GITHUB_TOKEN\" --name \"$RUNNER_NAME\" --labels \"$RUNNER_LABELS\" --work \"_work\" --replace --unattended"
 
     echo "Runner configured successfully. Starting as runner user..."
 
