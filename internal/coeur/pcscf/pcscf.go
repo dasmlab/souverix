@@ -4,6 +4,8 @@
 //
 // CI/CD Pipeline: Build → Unit Test (Diagnostic API) → Publish → System Test → Stable
 // See docs/DESIGN_PHILOSOPHY.md for SDLC methodology
+//
+// 🚀 Triggering CI/CD pipeline test run
 package pcscf
 
 import (
