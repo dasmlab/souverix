@@ -5,6 +5,7 @@ This directory contains flow diagrams for each Souverix component, showing how t
 ## Component Flows
 
 - [BGCF Flows](./bgcf-flows.md) - Breakout Gateway Control Function flows
+- [P-CSCF Flows](./pcscf-flows.md) - Proxy Call Session Control Function flows
 - *More component flows to be added...*
 
 ## Flow Categories
