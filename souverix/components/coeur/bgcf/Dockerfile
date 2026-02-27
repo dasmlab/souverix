@@ -39,7 +39,7 @@ WORKDIR /
 COPY --from=builder /out/bgcf /bgcf
 COPY --from=builder /app/docs /docs
 
-EXPOSE 8084/tcp
+EXPOSE 8084/tcp 9094/tcp
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3   CMD ["/bgcf", "--health-check"] || exit 1
 

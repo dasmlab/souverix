@@ -35,32 +35,63 @@ func main() {
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix BGCF - Version: " + version + " Build: " + gitCommit)
 
-	// Initialize Gin router
+	// Get ports from environment or use defaults
+	mainPort := os.Getenv("PORT")
+	if mainPort == "" {
+		mainPort = "8084"
+	}
+	metricsPort := os.Getenv("METRICS_PORT")
+	if metricsPort == "" {
+		metricsPort = "9094"
+	}
+
+	// Initialize main Gin router (r1)
 	gin.SetMode(gin.ReleaseMode)
-	router := gin.New()
-	router.Use(gin.LoggerWithWriter(logger.Writer()))
-	router.Use(gin.Recovery())
+	r1 := gin.New()
+	r1.Use(gin.LoggerWithWriter(logger.Writer()))
+	r1.Use(gin.Recovery())
 
 	// Register diagnostic endpoints
 	diag := diagnostics.New("Souverix BGCF", version, buildTime, gitCommit, logger)
-	diag.RegisterRoutes(router)
+	diag.RegisterRoutes(r1)
 
-	// Get port from environment or use default
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8084"
+	// Initialize metrics router (r2) - out of band
+	// TODO: Add ginprom wrapper when metrics package is ready
+	r2 := gin.New()
+	r2.Use(gin.LoggerWithWriter(logger.Writer()))
+	r2.Use(gin.Recovery())
+	
+	// Metrics endpoint placeholder
+	r2.GET("/metrics", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "metrics_endpoint_ready",
+			"component": "Souverix BGCF",
+		})
+	})
+
+	// Create HTTP servers
+	srv1 := &http.Server{
+		Addr:    ":" + mainPort,
+		Handler: r1,
 	}
 
-	// Create HTTP server
-	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: router,
+	srv2 := &http.Server{
+		Addr:    ":" + metricsPort,
+		Handler: r2,
 	}
 
-	// Start server in goroutine
+	// Start metrics server (r2) first as goroutine
 	go func() {
-		logger.Infof("Starting diagnostic server on :%s", port)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		logger.Infof("Starting metrics server on :%s", metricsPort)
+		if err := srv2.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.WithError(err).Fatal("failed to start metrics server")
+		}
+	}()
+
+	// Start main server (r1) as goroutine
+	go func() {
+		logger.Infof("Starting diagnostic server on :%s", mainPort)
+		if err := srv1.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.WithError(err).Fatal("failed to start diagnostic server")
 		}
 	}()
@@ -74,8 +105,12 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		logger.WithError(err).Error("error during shutdown")
+	// Shutdown both servers
+	if err := srv2.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("error during metrics server shutdown")
+	}
+	if err := srv1.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("error during diagnostic server shutdown")
 	}
 
 	logger.Info("Souverix BGCF stopped")

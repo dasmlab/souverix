@@ -46,10 +46,25 @@ echo "   Local test endpoint: http://localhost:${PORT}/diag/local_test"
 echo "   Press Ctrl+C to stop"
 echo ""
 
-# Run the container
+# Calculate metrics port (main port + 1000)
+METRICS_PORT=${METRICS_PORT:-9094}
+
+# Run the container in daemon mode
 ${RUNTIME} run \
+    -d \
     --name "${COMPONENT}-local" \
     --rm \
     -p "${PORT}:${PORT}" \
+    -p "${METRICS_PORT}:${METRICS_PORT}" \
     -e "PORT=${PORT}" \
+    -e "METRICS_PORT=${METRICS_PORT}" \
     "${IMAGE}"
+
+echo ""
+echo "✅ Container started in daemon mode"
+echo "   Container name: ${COMPONENT}-local"
+echo "   Main port: ${PORT}"
+echo "   Metrics port: ${METRICS_PORT}"
+echo ""
+echo "View logs: ${RUNTIME} logs -f ${COMPONENT}-local"
+echo "Stop container: ${RUNTIME} stop ${COMPONENT}-local"
