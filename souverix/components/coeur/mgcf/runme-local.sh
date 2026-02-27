@@ -6,8 +6,8 @@ set -euo pipefail
 COMPONENT="mgcf"
 PORT="${PORT:-8085}"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "${SCRIPT_DIR}"
+SCRIPT_DIR="$(cd "components/coeur/${COMPONENT}"(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "components/coeur/${COMPONENT}"{SCRIPT_DIR}"
 
 echo "🚀 Starting ${COMPONENT} component locally..."
 echo ""
@@ -15,12 +15,12 @@ echo ""
 # Build if binary doesn't exist
 if [[ ! -f "app/${COMPONENT}" ]] && [[ ! -f "app/main" ]] && [[ ! -f "${COMPONENT}-local" ]]; then
     echo "📦 Building ${COMPONENT}..."
-    cd app
-    go build -o "../${COMPONENT}-local" ./main.go || {
+    cd "components/coeur/${COMPONENT}"/../../
+    go build -o "components/coeur/${COMPONENT}/${COMPONENT}-local" ./main.go || {
         echo "❌ Build failed"
         exit 1
     }
-    cd ..
+    cd "components/coeur/${COMPONENT}"
 fi
 
 # Find binary

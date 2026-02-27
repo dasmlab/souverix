@@ -5,7 +5,7 @@ set -euo pipefail
 # Tests the /diag/local_test endpoint
 
 COMPONENT="mgcf"
-PORT="${PORT:-8086}"
+PORT="${PORT:-8085}"
 DIAG_URL="http://localhost:${PORT}/diag/local_test"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

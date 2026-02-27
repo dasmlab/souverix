@@ -5,7 +5,7 @@ set -euo pipefail
 # Tests the /diag/local_test endpoint
 
 COMPONENT="icscf"
-PORT="${PORT:-8087}"
+PORT="${PORT:-8082}"
 DIAG_URL="http://localhost:${PORT}/diag/local_test"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
