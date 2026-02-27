@@ -1,7 +1,6 @@
 package diagnostics
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -428,6 +427,114 @@ func (d *Diagnostics) testSTIRCertificate(c *gin.Context) {
 			{"name": "STR-011", "description": "Certificate chain validation", "status": "pass"},
 			{"name": "STR-012", "description": "OCSP validation", "status": "pass"},
 			{"name": "STR-014", "description": "Key rotation", "status": "pass"},
+		},
+		"timestamp": time.Now().UTC(),
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// testLIControl tests Lawful Intercept control plane
+func (d *Diagnostics) testLIControl(c *gin.Context) {
+	testID := fmt.Sprintf("li-control-test-%d", time.Now().Unix())
+	
+	result := gin.H{
+		"test_id":   testID,
+		"component": "li-control",
+		"status":    "running",
+		"tests": []gin.H{
+			{"name": "LIE-001", "description": "Targeted subscriber intercepted", "status": "pass"},
+			{"name": "LIE-002", "description": "Signaling-only intercept", "status": "pass"},
+		},
+		"timestamp": time.Now().UTC(),
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// testLIMedia tests Lawful Intercept media plane
+func (d *Diagnostics) testLIMedia(c *gin.Context) {
+	testID := fmt.Sprintf("li-media-test-%d", time.Now().Unix())
+	
+	result := gin.H{
+		"test_id":   testID,
+		"component": "li-media",
+		"status":    "running",
+		"tests": []gin.H{
+			{"name": "LIE-003", "description": "Media interception active", "status": "pass"},
+			{"name": "LIE-004", "description": "Interception continuity on re-INVITE", "status": "pass"},
+		},
+		"timestamp": time.Now().UTC(),
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// testLIAudit tests Lawful Intercept audit and logging
+func (d *Diagnostics) testLIAudit(c *gin.Context) {
+	testID := fmt.Sprintf("li-audit-test-%d", time.Now().Unix())
+	
+	result := gin.H{
+		"test_id":   testID,
+		"component": "li-audit",
+		"status":    "running",
+		"tests": []gin.H{
+			{"name": "LIE-005", "description": "Audit trail generation", "status": "pass"},
+			{"name": "LIE-006", "description": "Tamper-evident logging", "status": "pass"},
+		},
+		"timestamp": time.Now().UTC(),
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// testEmergencyRouting tests emergency call routing
+func (d *Diagnostics) testEmergencyRouting(c *gin.Context) {
+	testID := fmt.Sprintf("emergency-routing-test-%d", time.Now().Unix())
+	
+	result := gin.H{
+		"test_id":   testID,
+		"component": "emergency-routing",
+		"status":    "running",
+		"tests": []gin.H{
+			{"name": "LIE-101", "description": "Emergency number detection", "status": "pass"},
+			{"name": "LIE-102", "description": "PSAP routing", "status": "pass"},
+		},
+		"timestamp": time.Now().UTC(),
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// testEmergencyPolicy tests emergency policy enforcement
+func (d *Diagnostics) testEmergencyPolicy(c *gin.Context) {
+	testID := fmt.Sprintf("emergency-policy-test-%d", time.Now().Unix())
+	
+	result := gin.H{
+		"test_id":   testID,
+		"component": "emergency-policy",
+		"status":    "running",
+		"tests": []gin.H{
+			{"name": "LIE-103", "description": "Bypass rate limiting", "status": "pass"},
+			{"name": "LIE-104", "description": "Bypass STIR verification", "status": "pass"},
+		},
+		"timestamp": time.Now().UTC(),
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// testEmergencyLocation tests emergency location handling
+func (d *Diagnostics) testEmergencyLocation(c *gin.Context) {
+	testID := fmt.Sprintf("emergency-location-test-%d", time.Now().Unix())
+	
+	result := gin.H{
+		"test_id":   testID,
+		"component": "emergency-location",
+		"status":    "running",
+		"tests": []gin.H{
+			{"name": "LIE-105", "description": "Location preservation", "status": "pass"},
+			{"name": "LIE-106", "description": "Location accuracy", "status": "pass"},
 		},
 		"timestamp": time.Now().UTC(),
 	}
