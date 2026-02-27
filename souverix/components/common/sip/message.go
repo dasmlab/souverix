@@ -70,7 +70,7 @@ func New180Ringing(invite *Message) *Message {
 // String returns the SIP message as a string
 func (m *Message) String() string {
 	var sb strings.Builder
-	
+
 	// Request/Response line
 	if m.Method == "200" || m.Method == "180" {
 		sb.WriteString(fmt.Sprintf("SIP/2.0 %s\r\n", m.Method))
@@ -100,12 +100,12 @@ func (m *Message) String() string {
 	for _, rr := range m.RecordRoute {
 		sb.WriteString(fmt.Sprintf("Record-Route: %s\r\n", rr))
 	}
-	
+
 	sb.WriteString("\r\n")
 	if m.Body != "" {
 		sb.WriteString(m.Body)
 	}
-	
+
 	return sb.String()
 }
 

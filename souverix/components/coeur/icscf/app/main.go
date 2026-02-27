@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
+	
 	"github.com/dasmlab/ims/components/common/hss"
 	"github.com/dasmlab/ims/components/coeur/icscf/app/internal/icscf"
 	"github.com/sirupsen/logrus"
@@ -28,13 +28,13 @@ func main() {
 	logger := logrus.New()
 	logger.SetLevel(logrus.InfoLevel)
 	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-
+	
 	logger.WithFields(logrus.Fields{
 		"component": "Souverix I-CSCF",
 		"version":   version,
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix I-CSCF - Version: " + version + " Build: " + gitCommit)
-
+	
 	// Create HSS client
 	hssClient := hss.NewHSSClient()
 
@@ -51,7 +51,7 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-
+	
 	logger.Info("shutting down Souverix I-CSCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

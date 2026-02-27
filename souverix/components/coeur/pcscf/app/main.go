@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
+	
 	"github.com/dasmlab/ims/components/coeur/pcscf/app/internal/pcscf"
 	"github.com/sirupsen/logrus"
 )
@@ -27,13 +27,13 @@ func main() {
 	logger := logrus.New()
 	logger.SetLevel(logrus.InfoLevel)
 	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-
+	
 	logger.WithFields(logrus.Fields{
 		"component": "Souverix P-CSCF",
 		"version":   version,
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix P-CSCF - Version: " + version + " Build: " + gitCommit)
-
+	
 	// Create P-CSCF handler
 	stdLogger := log.New(os.Stdout, "[P-CSCF] ", log.LstdFlags)
 	handler := pcscf.NewHandler("icscf.example.com:5060", stdLogger)
@@ -41,12 +41,12 @@ func main() {
 	// Start P-CSCF
 	logger.Info("P-CSCF component started")
 	logger.Info("Handler initialized with I-CSCF: icscf.example.com:5060")
-
+	
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-
+	
 	logger.Info("shutting down Souverix P-CSCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

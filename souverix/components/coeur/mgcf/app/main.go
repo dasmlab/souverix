@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
+	
 	"github.com/dasmlab/ims/components/coeur/mgcf/app/internal/mgcf"
 	"github.com/sirupsen/logrus"
 )
@@ -27,13 +27,13 @@ func main() {
 	logger := logrus.New()
 	logger.SetLevel(logrus.InfoLevel)
 	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-
+	
 	logger.WithFields(logrus.Fields{
 		"component": "Souverix MGCF",
 		"version":   version,
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix MGCF - Version: " + version + " Build: " + gitCommit)
-
+	
 	// Create MGCF handler
 	stdLogger := log.New(os.Stdout, "[MGCF] ", log.LstdFlags)
 	handler := mgcf.NewHandler(stdLogger)
@@ -46,7 +46,7 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-
+	
 	logger.Info("shutting down Souverix MGCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
