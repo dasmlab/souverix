@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# buildme.sh - Build Souverix Coeur container image
-# Supports both Docker and Podman
-
-app=coeur
+# buildme.sh - Build component container image
+app=icscf
 tag="${1:-local}"
 
-# Detect container runtime
 if command -v podman &> /dev/null && [[ -z "${FORCE_DOCKER:-}" ]]; then
     RUNTIME=podman
     echo ":whale: Using Podman"
@@ -21,12 +18,10 @@ cd "${SCRIPT_DIR}"
 
 echo ":hammer: Building ${app}:${tag}..."
 
-# Get version info
 VERSION="${VERSION:-dev}"
 BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-# Build with staged cache mounts for faster rebuilds
 ${RUNTIME} build \
     --tag "${app}:${tag}" \
     --file Dockerfile \
@@ -38,6 +33,3 @@ ${RUNTIME} build \
     .
 
 echo ":white_check_mark: Build complete: ${app}:${tag}"
-echo
-echo "Run with: ./runme-local.sh"
-echo "Or: ${RUNTIME} run -d --name ${app}-local ${app}:${tag}"
