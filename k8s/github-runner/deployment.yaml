@@ -44,7 +44,7 @@ spec:
         - name: RUNNER_NAME
           value: "2026-prod-1"  # OCP SNO hostname
         - name: RUNNER_LABELS
-          value: "self-hosted,linux,x64,ocp-sno"
+          value: "self-hosted,linux,x64,ocp-sno,dind"
         - name: REGISTRY_PASSWORD
           valueFrom:
             secretKeyRef:

@@ -22,7 +22,7 @@ jobs:
   # PHASE 1: BUILD
   build:
     name: Build Container
-    runs-on: self-hosted
+    runs-on: [self-hosted, dind]
     env:
       # For OCP/Kubernetes self-hosted runners with dind sidecar
       # Runner pod must include docker:dind sidecar with privileged mode and TLS certs
@@ -121,7 +121,7 @@ jobs:
   # PHASE 2: UNIT TEST (via Diagnostic API)
   unit-test:
     name: Unit Test via Diagnostic API
-    runs-on: self-hosted
+    runs-on: [self-hosted, dind]
     needs: build
     env:
       # For OCP/Kubernetes self-hosted runners with dind sidecar
@@ -249,7 +249,7 @@ jobs:
   # PHASE 3: PUBLISH (Tag and Trigger System Test)
   publish:
     name: Publish and Tag for System Test
-    runs-on: self-hosted
+    runs-on: [self-hosted, dind]
     needs: [build, unit-test]
     if: needs.unit-test.outputs.test-status == 'pass'
     outputs:
@@ -286,7 +286,7 @@ jobs:
   # PHASE 4: SYSTEM TEST (Phantom/Trigger)
   system-test:
     name: System Test (Trigger)
-    runs-on: self-hosted
+    runs-on: [self-hosted, dind]
     needs: [build, unit-test, publish]
     if: needs.unit-test.outputs.test-status == 'pass'
     
@@ -335,7 +335,7 @@ jobs:
   # PHASE 5: PUBLISH STABLE
   publish-stable:
     name: Publish Stable Release
-    runs-on: self-hosted
+    runs-on: [self-hosted, dind]
     needs: [build, unit-test, publish, system-test]
     if: |
       needs.unit-test.outputs.test-status == 'pass' &&
