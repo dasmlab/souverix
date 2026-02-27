@@ -21,13 +21,9 @@ env:
 jobs:
   # PHASE 1: BUILD
   build:
-    name: Build Container
-    runs-on: [self-hosted, dind]
-    env:
-      # For OCP/Kubernetes self-hosted runners with dind sidecar
-      # Runner pod must include docker:dind sidecar with privileged mode
-      # Uses Unix socket for communication (simpler, no TLS needed)
-      DOCKER_HOST: unix:///var/run/docker.sock
+    name: Build Container (Podman)
+    runs-on: self-hosted
+    # Note: Using Podman/Buildah - no Docker daemon or socket needed!
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
@@ -38,99 +34,68 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify Docker daemon
-        id: docker-check
-        continue-on-error: true
+      # Note: Using Podman/Buildah - no daemon or socket needed!
+
+      - name: Check for Podman/Buildah
+        id: podman-check
         run: |
-          echo "Checking Docker daemon availability..."
-          echo "DOCKER_HOST=${DOCKER_HOST:-not set}"
-          echo "Checking for Docker socket..."
-          
-          # Check if socket exists and is accessible
-          if [ -S /var/run/docker.sock ]; then
-            echo "✅ Docker socket found at /var/run/docker.sock"
-            SOCKET_INFO=$(ls -la /var/run/docker.sock)
-            echo "Socket info: $SOCKET_INFO"
-            echo "docker_available=true" >> $GITHUB_OUTPUT
+          if command -v podman &> /dev/null; then
+            podman --version
+            echo "✅ Podman is available"
+            echo "podman_available=true" >> $GITHUB_OUTPUT
+          elif command -v buildah &> /dev/null; then
+            buildah --version
+            echo "✅ Buildah is available"
+            echo "podman_available=true" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Docker socket not found at /var/run/docker.sock"
-            echo "⚠️ Build will be skipped - ensure runner pod includes docker:dind sidecar"
-            echo "Required: Socket mounted at /var/run/docker.sock"
-            echo "See docs/OCP_RUNNER_SETUP.md for setup instructions"
-            echo "docker_available=false" >> $GITHUB_OUTPUT
-            exit 0  # Don't fail, just mark as unavailable
+            echo "⚠️ Podman/Buildah not available"
+            echo "podman_available=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Fix Docker socket permissions
-        if: steps.docker-check.outputs.docker_available == 'true'
+      - name: Login to Container Registry
+        if: steps.podman-check.outputs.podman_available == 'true'
         run: |
-          # Ensure socket is accessible (runner runs as root, but fix just in case)
-          if [ -S /var/run/docker.sock ]; then
-            chmod 666 /var/run/docker.sock || true
-            echo "✅ Docker socket permissions updated"
-          fi
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ${{ env.REGISTRY }} \
+            --username ${{ github.actor }} \
+            --password-stdin
 
-      - name: Set up Docker Buildx
-        if: steps.docker-check.outputs.docker_available == 'true'
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            network=host
-
-      - name: Log in to Container Registry
-        if: steps.docker-check.outputs.docker_available == 'true'
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        if: steps.docker-check.outputs.docker_available == 'true'
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push
-        if: steps.docker-check.outputs.docker_available == 'true'
+      - name: Build and push with Podman
+        if: steps.podman-check.outputs.podman_available == 'true'
         id: build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.pcscf
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            COMPONENT=${{ env.COMPONENT }}
-            VERSION=${{ github.sha }}
-          driver-opts: |
-            network=host
+        run: |
+          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          LATEST_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          
+          # Build with Podman (daemonless, no socket needed!)
+          podman build \
+            --file Dockerfile.pcscf \
+            --build-arg COMPONENT=${{ env.COMPONENT }} \
+            --build-arg VERSION=${{ github.sha }} \
+            --tag "$IMAGE_TAG" \
+            --tag "$LATEST_TAG" \
+            .
+          
+          # Push images
+          podman push "$IMAGE_TAG"
+          podman push "$LATEST_TAG"
+          
+          echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image-digest=$(podman inspect --format '{{.Id}}' $IMAGE_TAG)" >> $GITHUB_OUTPUT
 
-      - name: Skip build (Docker not available)
-        if: steps.docker-check.outputs.docker_available != 'true'
+      - name: Skip build (Podman not available)
+        if: steps.podman-check.outputs.podman_available != 'true'
         run: |
           echo "## Build Phase Skipped" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ Docker daemon not available" >> $GITHUB_STEP_SUMMARY
-          echo "Please set up dind sidecar per docs/OCP_RUNNER_SETUP.md" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Podman/Buildah not available" >> $GITHUB_STEP_SUMMARY
+          echo "Please ensure Podman or Buildah is installed in the runner image" >> $GITHUB_STEP_SUMMARY
 
       - name: Build status
-        if: steps.docker-check.outputs.docker_available == 'true'
+        if: steps.podman-check.outputs.podman_available == 'true'
         run: |
           echo "## Build Phase Complete" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Container built and pushed" >> $GITHUB_STEP_SUMMARY
-          echo "📦 Image: ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
-          echo "🔖 Digest: ${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Container built and pushed with Podman" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Image: ${{ steps.build.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔖 Digest: ${{ steps.build.outputs.image-digest }}" >> $GITHUB_STEP_SUMMARY
 
   # PHASE 2: UNIT TEST (via Diagnostic API)
   unit-test:
