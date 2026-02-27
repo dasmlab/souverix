@@ -17,21 +17,18 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* Banner crest logo - big and proud */
-.md-header__inner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem 2rem;
-}
-
+/* Banner crest in content area - big and proud */
 .banner-crest {
     display: flex;
     align-items: center;
     gap: 2rem;
     width: 100%;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, #181442 0%, #115E94 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
 .banner-crest-logo {
@@ -40,19 +37,37 @@
 
 .banner-crest-logo img,
 .banner-crest-logo svg {
-    width: 180px;
+    width: 200px;
     height: auto;
-    max-height: 120px;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    max-height: 150px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
 }
 
 .banner-crest-title {
     flex: 1;
     color: white;
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
     letter-spacing: 0.05em;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .banner-crest {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .banner-crest-title {
+        font-size: 2rem;
+    }
+    
+    .banner-crest-logo img,
+    .banner-crest-logo svg {
+        width: 150px;
+    }
 }
 
 /* Bilingual boxes side by side */
