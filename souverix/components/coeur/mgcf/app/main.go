@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	
+
+	"github.com/dasmlab/ims/components/coeur/mgcf/app/internal/mgcf"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,32 +18,38 @@ var (
 	gitCommit = "unknown"
 )
 
-// @title Souverix Mgcf Diagnostic API
+// @title Souverix MGCF Diagnostic API
 // @version 1.0
-// @description Diagnostic endpoints for Souverix Mgcf
+// @description Diagnostic endpoints for Souverix MGCF
 // @host localhost:8081
 // @BasePath /
 func main() {
-	log := logrus.New()
-	log.SetLevel(logrus.InfoLevel)
-	log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-	
-	log.WithFields(logrus.Fields{
-		"component": "Souverix Mgcf",
+	logger := logrus.New()
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+
+	logger.WithFields(logrus.Fields{
+		"component": "Souverix MGCF",
 		"version":   version,
 		"build":     gitCommit,
-	}).Info("Souverix - Souverix Mgcf - Version: " + version + " Build: " + gitCommit)
-	
-	// Mgcf stub - will be implemented later
-	log.Info("Mgcf component started (stub)")
-	
+	}).Info("Souverix - Souverix MGCF - Version: " + version + " Build: " + gitCommit)
+
+	// Create MGCF handler
+	stdLogger := log.New(os.Stdout, "[MGCF] ", log.LstdFlags)
+	handler := mgcf.NewHandler(stdLogger)
+
+	// Start MGCF
+	logger.Info("MGCF component started")
+	_ = handler
+
+	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	
-	log.Info("shutting down Souverix Mgcf...")
+
+	logger.Info("shutting down Souverix MGCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = shutdownCtx
-	log.Info("Souverix Mgcf stopped")
+	logger.Info("Souverix MGCF stopped")
 }

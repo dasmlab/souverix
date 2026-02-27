@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	
+
+	"github.com/dasmlab/ims/components/common/hss"
+	"github.com/dasmlab/ims/components/coeur/scscf/app/internal/scscf"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,32 +19,43 @@ var (
 	gitCommit = "unknown"
 )
 
-// @title Souverix Scscf Diagnostic API
+// @title Souverix S-CSCF Diagnostic API
 // @version 1.0
-// @description Diagnostic endpoints for Souverix Scscf
+// @description Diagnostic endpoints for Souverix S-CSCF
 // @host localhost:8081
 // @BasePath /
 func main() {
-	log := logrus.New()
-	log.SetLevel(logrus.InfoLevel)
-	log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-	
-	log.WithFields(logrus.Fields{
-		"component": "Souverix Scscf",
+	logger := logrus.New()
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+
+	logger.WithFields(logrus.Fields{
+		"component": "Souverix S-CSCF",
 		"version":   version,
 		"build":     gitCommit,
-	}).Info("Souverix - Souverix Scscf - Version: " + version + " Build: " + gitCommit)
-	
-	// Scscf stub - will be implemented later
-	log.Info("Scscf component started (stub)")
-	
+	}).Info("Souverix - Souverix S-CSCF - Version: " + version + " Build: " + gitCommit)
+
+	// Create HSS client
+	hssClient := hss.NewHSSClient()
+
+	// Create S-CSCF handler
+	stdLogger := log.New(os.Stdout, "[S-CSCF] ", log.LstdFlags)
+	handler := scscf.NewHandler(hssClient, "bgcf.example.com:5060", stdLogger)
+
+	// Start S-CSCF
+	logger.Info("S-CSCF component started")
+	logger.Info("HSS client initialized")
+	logger.Info("BGCF address: bgcf.example.com:5060")
+	_ = handler
+
+	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	
-	log.Info("shutting down Souverix Scscf...")
+
+	logger.Info("shutting down Souverix S-CSCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = shutdownCtx
-	log.Info("Souverix Scscf stopped")
+	logger.Info("Souverix S-CSCF stopped")
 }

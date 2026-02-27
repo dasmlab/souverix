@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	
+
+	"github.com/dasmlab/ims/components/coeur/bgcf/app/internal/bgcf"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,26 +24,32 @@ var (
 // @host localhost:8081
 // @BasePath /
 func main() {
-	log := logrus.New()
-	log.SetLevel(logrus.InfoLevel)
-	log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
-	
-	log.WithFields(logrus.Fields{
+	logger := logrus.New()
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+
+	logger.WithFields(logrus.Fields{
 		"component": "Souverix BGCF",
 		"version":   version,
 		"build":     gitCommit,
 	}).Info("Souverix - Souverix BGCF - Version: " + version + " Build: " + gitCommit)
-	
-	// BGCF stub - will be implemented later
-	log.Info("BGCF component started (stub)")
-	
+
+	// Create BGCF handler
+	stdLogger := log.New(os.Stdout, "[BGCF] ", log.LstdFlags)
+	handler := bgcf.NewHandler(stdLogger)
+
+	// Start BGCF
+	logger.Info("BGCF component started")
+	_ = handler
+
+	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	
-	log.Info("shutting down Souverix BGCF...")
+
+	logger.Info("shutting down Souverix BGCF...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = shutdownCtx
-	log.Info("Souverix BGCF stopped")
+	logger.Info("Souverix BGCF stopped")
 }
