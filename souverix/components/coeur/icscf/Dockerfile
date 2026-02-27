@@ -32,7 +32,7 @@ WORKDIR /
 COPY --from=builder /out/icscf /icscf
 COPY --from=builder /app/docs /docs
 
-EXPOSE 8082/tcp 9082/tcp
+EXPOSE 8082/tcp 9092/tcp 9082/tcp 9182/tcp
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3   CMD ["/icscf", "--health-check"] || exit 1
 

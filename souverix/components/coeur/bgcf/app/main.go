@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Depado/ginprom"
 	"github.com/dasmlab/souverix/common/diagnostics"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -44,28 +45,64 @@ func main() {
 	if metricsPort == "" {
 		metricsPort = "9094"
 	}
+	diagPort := os.Getenv("DIAG_PORT")
+	if diagPort == "" {
+		diagPort = "9084"
+	}
+	testPort := os.Getenv("TEST_PORT")
+	if testPort == "" {
+		testPort = "9184"
+	}
 
-	// Initialize main Gin router (r1)
+	// Initialize main Gin router (r1) - main application server
 	gin.SetMode(gin.ReleaseMode)
 	r1 := gin.New()
 	r1.Use(gin.LoggerWithWriter(logger.Writer()))
 	r1.Use(gin.Recovery())
 
-	// Register diagnostic endpoints
-	diag := diagnostics.New("Souverix BGCF", version, buildTime, gitCommit, logger)
-	diag.RegisterRoutes(r1)
-
-	// Initialize metrics router (r2) - out of band
-	// TODO: Add ginprom wrapper when metrics package is ready
+	// Initialize metrics router (r2) - Prometheus metrics, out of band
 	r2 := gin.New()
 	r2.Use(gin.LoggerWithWriter(logger.Writer()))
 	r2.Use(gin.Recovery())
-	
-	// Metrics endpoint placeholder
-	r2.GET("/metrics", func(c *gin.Context) {
+
+	// Initialize diagnostics router (r3) - diagnostics endpoints, out of band
+	r3 := gin.New()
+	r3.Use(gin.LoggerWithWriter(logger.Writer()))
+	r3.Use(gin.Recovery())
+
+	// Initialize test router (r4) - test endpoints, out of band
+	r4 := gin.New()
+	r4.Use(gin.LoggerWithWriter(logger.Writer()))
+	r4.Use(gin.Recovery())
+
+	// Setup ginprom - wrap r1 with instrumentation, r2 serves metrics
+	p := ginprom.New(
+		ginprom.Engine(r2),
+		ginprom.Subsystem("gin"),
+		ginprom.Path("/metrics"),
+	)
+
+	// Wrap main router (r1) with ginprom instrumentation
+	r1.Use(p.Instrument())
+
+	// Register diagnostic endpoints on r3 (diagnostics server)
+	diag := diagnostics.New("Souverix BGCF", version, buildTime, gitCommit, logger)
+	diag.RegisterRoutes(r3)
+
+	// Register test endpoints on r4 (test server)
+	// TODO: Add testing framework when ready
+	r4.GET("/test/local", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status": "metrics_endpoint_ready",
+			"resp": "success",
 			"component": "Souverix BGCF",
+			"test_type": "local",
+		})
+	})
+	r4.GET("/test/unit", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"resp": "success",
+			"component": "Souverix BGCF",
+			"test_type": "unit",
 		})
 	})
 
@@ -80,19 +117,46 @@ func main() {
 		Handler: r2,
 	}
 
-	// Start metrics server (r2) first as goroutine
+	srv3 := &http.Server{
+		Addr:    ":" + diagPort,
+		Handler: r3,
+	}
+
+	srv4 := &http.Server{
+		Addr:    ":" + testPort,
+		Handler: r4,
+	}
+
+	// Start all servers as goroutines (out of band)
+	// Start metrics server (r2) first
 	go func() {
-		logger.Infof("Starting metrics server on :%s", metricsPort)
+		logger.Infof("Starting metrics server (Prometheus) on :%s", metricsPort)
 		if err := srv2.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.WithError(err).Fatal("failed to start metrics server")
 		}
 	}()
 
-	// Start main server (r1) as goroutine
+	// Start diagnostics server (r3)
 	go func() {
-		logger.Infof("Starting diagnostic server on :%s", mainPort)
+		logger.Infof("Starting diagnostics server on :%s", diagPort)
+		if err := srv3.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.WithError(err).Fatal("failed to start diagnostics server")
+		}
+	}()
+
+	// Start test server (r4)
+	go func() {
+		logger.Infof("Starting test server on :%s", testPort)
+		if err := srv4.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.WithError(err).Fatal("failed to start test server")
+		}
+	}()
+
+	// Start main server (r1) last
+	go func() {
+		logger.Infof("Starting main server on :%s", mainPort)
 		if err := srv1.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.WithError(err).Fatal("failed to start diagnostic server")
+			logger.WithError(err).Fatal("failed to start main server")
 		}
 	}()
 
@@ -105,12 +169,18 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Shutdown both servers
+	// Shutdown all servers
+	if err := srv4.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("error during test server shutdown")
+	}
+	if err := srv3.Shutdown(shutdownCtx); err != nil {
+		logger.WithError(err).Error("error during diagnostics server shutdown")
+	}
 	if err := srv2.Shutdown(shutdownCtx); err != nil {
 		logger.WithError(err).Error("error during metrics server shutdown")
 	}
 	if err := srv1.Shutdown(shutdownCtx); err != nil {
-		logger.WithError(err).Error("error during diagnostic server shutdown")
+		logger.WithError(err).Error("error during main server shutdown")
 	}
 
 	logger.Info("Souverix BGCF stopped")

@@ -32,7 +32,7 @@ WORKDIR /
 COPY --from=builder /out/hss /hss
 COPY --from=builder /app/docs /docs
 
-EXPOSE 8086/tcp 9086/tcp
+EXPOSE 8086/tcp 9096/tcp 9086/tcp 9186/tcp
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3   CMD ["/hss", "--health-check"] || exit 1
 

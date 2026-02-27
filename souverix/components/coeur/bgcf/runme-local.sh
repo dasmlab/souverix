@@ -46,8 +46,10 @@ echo "   Local test endpoint: http://localhost:${PORT}/diag/local_test"
 echo "   Press Ctrl+C to stop"
 echo ""
 
-# Calculate metrics port (main port + 1000)
-METRICS_PORT=${METRICS_PORT:-9094}
+# Calculate out-of-band ports (common across all components)
+METRICS_PORT="${METRICS_PORT:-9094}"    # Prometheus metrics
+DIAG_PORT="${DIAG_PORT:-9084}"          # Diagnostics
+TEST_PORT="${TEST_PORT:-9184}"          # Test endpoints
 
 # Run the container in daemon mode
 ${RUNTIME} run \
@@ -56,15 +58,27 @@ ${RUNTIME} run \
     --rm \
     -p "${PORT}:${PORT}" \
     -p "${METRICS_PORT}:${METRICS_PORT}" \
+    -p "${DIAG_PORT}:${DIAG_PORT}" \
+    -p "${TEST_PORT}:${TEST_PORT}" \
+    -p "${DIAG_PORT}:${DIAG_PORT}" \
+    -p "${TEST_PORT}:${TEST_PORT}" \
     -e "PORT=${PORT}" \
     -e "METRICS_PORT=${METRICS_PORT}" \
+    -e "DIAG_PORT=${DIAG_PORT}" \
+    -e "TEST_PORT=${TEST_PORT}" \
+    -e "DIAG_PORT=${DIAG_PORT}" \
+    -e "TEST_PORT=${TEST_PORT}" \
     "${IMAGE}"
 
 echo ""
 echo "✅ Container started in daemon mode"
 echo "   Container name: ${COMPONENT}-local"
-echo "   Main port: ${PORT}"
-echo "   Metrics port: ${METRICS_PORT}"
+echo ""
+echo "📡 Servers (all out of band):"
+echo "   Main:      http://localhost:${PORT}"
+echo "   Metrics:   http://localhost:${METRICS_PORT}/metrics (Prometheus)"
+echo "   Diagnostics: http://localhost:${DIAG_PORT}/diag/health"
+echo "   Test:      http://localhost:${TEST_PORT}/test/local"
 echo ""
 echo "View logs: ${RUNTIME} logs -f ${COMPONENT}-local"
 echo "Stop container: ${RUNTIME} stop ${COMPONENT}-local"
