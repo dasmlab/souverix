@@ -41,7 +41,8 @@ Souverix Platform
 
 ## About Souverix / À propos de Souverix
 
-<div class="about-section" markdown="1">
+<div class="bilingual-boxes">
+<div class="bilingual-box" markdown="1">
 
 ### Français (QC)
 
@@ -56,7 +57,7 @@ Souverix traite la signalisation comme une infrastructure stratégique :
 
 </div>
 
-<div class="about-section" markdown="1">
+<div class="bilingual-box" markdown="1">
 
 ### English
 
@@ -69,6 +70,7 @@ Souverix treats signaling as strategic infrastructure:
 - **Regulation-ready**: STIR/SHAKEN, lawful intercept, emergency routing, and auditability.
 - **Cloud-native CNF**: built to run on Kubernetes/OpenShift with predictable operations.
 
+</div>
 </div>
 
 ---

@@ -13,7 +13,23 @@ Souverix Platform
 
 ## About Souverix / À propos de Souverix
 
-<div class="about-section" markdown="1">
+<div class="bilingual-boxes">
+<div class="bilingual-box" markdown="1">
+
+### Français (QC)
+
+**Souverix** est une **plateforme de signalisation souveraine**, **nativement IA**, conçue pour des environnements **opérateurs** et **défense**. Développée en Golang moderne, Souverix est une réécriture architecturale propre visant la **performance CPS**, la **maîtrise des frontières d'interconnexion**, et la **souveraineté cryptographique**.
+
+Souverix traite la signalisation comme une infrastructure stratégique :
+- **Souveraineté par conception** : racines de confiance, politiques et contrôle d'interconnexion.
+- **Résilience par défaut** : modèles active/active, isolation des pannes, continuité d'urgence.
+- **Intelligence à la frontière** : détection IA, classification, et application adaptative.
+- **Prêt pour la conformité** : STIR/SHAKEN, interception légale, urgence, auditabilité.
+- **CNF natif** : conçu pour Kubernetes/OpenShift avec une exploitation prévisible.
+
+</div>
+
+<div class="bilingual-box" markdown="1">
 
 ### English
 
@@ -27,20 +43,6 @@ Souverix treats signaling as strategic infrastructure:
 - **Cloud-native CNF**: built to run on Kubernetes/OpenShift with predictable operations.
 
 </div>
-
-<div class="about-section" markdown="1">
-
-### Français (QC)
-
-**Souverix** est une **plateforme de signalisation souveraine**, **nativement IA**, conçue pour des environnements **opérateurs** et **défense**. Développée en Golang moderne, Souverix est une réécriture architecturale propre visant la **performance CPS**, la **maîtrise des frontières d'interconnexion**, et la **souveraineté cryptographique**.
-
-Souverix traite la signalisation comme une infrastructure stratégique :
-- **Souveraineté par conception** : racines de confiance, politiques et contrôle d'interconnexion.
-- **Résilience par défaut** : modèles active/active, isolation des pannes, continuité d'urgence.
-- **Intelligence à la frontière** : détection IA, classification, et application adaptative.
-- **Prêt pour la conformité** : STIR/SHAKEN, interception légale, urgence, auditabilité.
-- **CNF natif** : conçu pour Kubernetes/OpenShift avec une exploitation prévisible.
-
 </div>
 
 ---
