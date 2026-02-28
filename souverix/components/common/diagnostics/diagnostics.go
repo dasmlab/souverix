@@ -1,6 +1,7 @@
 package diagnostics
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
