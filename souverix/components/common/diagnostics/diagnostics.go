@@ -309,3 +309,13 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 
 	c.JSON(statusCode, response)
 }
+
+// SetStateProvider sets the component's state provider
+func (d *Diagnostics) SetStateProvider(provider ComponentStateProvider) {
+	d.stateProvider = provider
+}
+
+// GetStateTracker returns the state tracker
+func (d *Diagnostics) GetStateTracker() *StateTracker {
+	return d.stateTracker
+}
