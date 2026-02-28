@@ -8,7 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Depado/ginprom"
 	"github.com/dasmlab/souverix/common/diagnostics"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -75,15 +74,10 @@ func main() {
 	r4.Use(gin.LoggerWithWriter(logger.Writer()))
 	r4.Use(gin.Recovery())
 
-	// Setup ginprom - wrap r1 with instrumentation, r2 serves metrics
-	p := ginprom.New(
-		ginprom.Engine(r2),
-		ginprom.Subsystem("gin"),
-		ginprom.Path("/metrics"),
-	)
-
-	// Wrap main router (r1) with ginprom instrumentation
-	r1.Use(p.Instrument())
+	// Metrics endpoint on r2 (Prometheus format - will be implemented later)
+	r2.GET("/metrics", func(c *gin.Context) {
+		c.String(http.StatusOK, "# Metrics endpoint - Prometheus format to be implemented\n")
+	})
 
 	// Register diagnostic endpoints on r3 (diagnostics server)
 	diag := diagnostics.New("Souverix BGCF", version, buildTime, gitCommit, logger)
