@@ -264,18 +264,30 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 	results := []map[string]interface{}{}
 	allPassed := true
 
-	for _, step := range compSteps {
+	d.logger.Infof("Executing %d steps for component %s in flow %s", len(compSteps), compShortName, flowID)
+
+	for i, step := range compSteps {
+		stepNum := i + 1
+		d.logger.Infof("=== Step %d/%d: %s %s -> %s (Interface: %s) ===", 
+			stepNum, len(compSteps), step.Message, step.From, step.To, step.Interface)
+		d.logger.Infof("Description: %s", step.Description)
+		
 		stepResult := map[string]interface{}{
 			"step":        step.Sequence,
+			"step_number": stepNum,
 			"message":     step.Message,
+			"from":        step.From,
+			"to":          step.To,
 			"interface":   step.Interface,
 			"direction":   step.Direction,
 			"description": step.Description,
 		}
 
 		// Generate faux request for this step
+		DebugLog(d.logger, "Generating faux request for step %d", step.Sequence)
 		fauxReq, err := d.fauxGen.GenerateFauxRequest(flowID, step.Sequence, compShortName, baseURL)
 		if err != nil {
+			d.logger.WithError(err).Errorf("Step %d: Failed to generate faux request", step.Sequence)
 			stepResult["error"] = err.Error()
 			stepResult["passed"] = false
 			allPassed = false
@@ -287,8 +299,17 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 		if config != nil {
 			if neighborURL, exists := config.Neighbors[step.To]; exists {
 				fauxReq.URL = neighborURL
+				d.logger.Infof("Step %d: Overriding endpoint %s -> %s", step.Sequence, step.To, neighborURL)
 				DebugLog(d.logger, "Step %d: Overriding endpoint for %s -> %s", step.Sequence, step.To, neighborURL)
 			}
+		}
+
+		// Log the SIP message being sent/received
+		if step.Direction == "request" {
+			d.logger.Infof("Step %d: Sending %s to %s via %s", step.Sequence, step.Message, step.To, step.Interface)
+			d.logger.Debugf("Step %d: SIP Message:\n%s", step.Sequence, fauxReq.Body)
+		} else {
+			d.logger.Infof("Step %d: Receiving %s from %s via %s", step.Sequence, step.Message, step.From, step.Interface)
 		}
 
 		stepResult["request"] = map[string]interface{}{
@@ -299,23 +320,32 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 
 		// Execute faux request (if it's outgoing)
 		if step.Direction == "request" {
+			d.logger.Infof("Step %d: Executing request to %s", step.Sequence, fauxReq.URL)
 			resp, err := d.fauxGen.ExecuteFauxRequest(fauxReq)
 			if err != nil {
+				d.logger.WithError(err).Errorf("Step %d: Request execution failed", step.Sequence)
 				stepResult["error"] = err.Error()
 				stepResult["passed"] = false
 				allPassed = false
 			} else {
+				d.logger.Infof("Step %d: Received response %d from %s", step.Sequence, resp.StatusCode, step.To)
+				d.logger.Debugf("Step %d: Response Body:\n%s", step.Sequence, resp.Body)
+				
 				stepResult["response"] = map[string]interface{}{
 					"status_code": resp.StatusCode,
 					"body":        resp.Body,
 				}
 				stepResult["passed"] = (resp.StatusCode == fauxReq.ExpectedCode)
 				if !stepResult["passed"].(bool) {
+					d.logger.Warnf("Step %d: Expected status %d but got %d", step.Sequence, fauxReq.ExpectedCode, resp.StatusCode)
 					allPassed = false
+				} else {
+					d.logger.Infof("Step %d: ✅ Passed (status %d)", step.Sequence, resp.StatusCode)
 				}
 			}
 		} else {
 			// For responses, we verify state instead
+			d.logger.Infof("Step %d: Response step - verifying state", step.Sequence)
 			stepResult["passed"] = true
 		}
 
@@ -354,6 +384,7 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 					Message:   fmt.Sprintf("State key '%s' exists", stateKey),
 					Timestamp: time.Now(),
 				}
+				d.logger.Infof("Step %d: ✅ State verification passed", step.Sequence)
 			} else {
 				verification = VerificationResult{
 					Step:      step.Sequence,
@@ -363,6 +394,7 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 					Message:   fmt.Sprintf("State key '%s' does not exist", stateKey),
 					Timestamp: time.Now(),
 				}
+				d.logger.Warnf("Step %d: ❌ State verification failed: %s", step.Sequence, verification.Message)
 			}
 		}
 		
@@ -376,6 +408,7 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 		}
 
 		results = append(results, stepResult)
+		d.logger.Infof("Step %d/%d completed: %s", stepNum, len(compSteps), step.Message)
 	}
 
 	// Get verification summary
