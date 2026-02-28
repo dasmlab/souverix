@@ -110,7 +110,7 @@ func (h *SIPHandler) HandleRequest(c *gin.Context) {
 // RegisterRoutes registers SIP routes on a Gin router
 func (h *SIPHandler) RegisterRoutes(router *gin.Engine, path string) {
 	router.POST(path, h.HandleRequest)
-	router.ANY(path, h.HandleRequest) // Also handle other methods
+	router.Any(path, h.HandleRequest) // Also handle other methods
 }
 
 // defaultErrorHandler is the default error handler

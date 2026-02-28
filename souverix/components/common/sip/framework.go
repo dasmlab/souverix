@@ -89,14 +89,13 @@ func (c *Component) Forward(ctx context.Context, msg *Message, targetHost string
 	defer resp.Body.Close()
 
 	// Read response
-	var buf strings.Builder
-	_, err = buf.ReadFrom(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
 
 	// Parse response
-	responseMsg, err := ParseMessage(buf.String())
+	responseMsg, err := ParseMessage(string(body))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
