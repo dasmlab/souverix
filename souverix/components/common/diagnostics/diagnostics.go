@@ -168,10 +168,10 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 		baseURL = fmt.Sprintf("%s://%s", scheme, c.Request.Host)
 	}
 
-	d.logger.Infof("Unit test called for flow: %s, component: %s", flowID, d.componentName)
+	d.logger.Infof("Unit test called for flow: %s, component: %s (short: %s)", flowID, d.componentName, compShortName)
 
-	// Get component's steps in this flow
-	compSteps := d.registry.GetComponentSteps(d.componentName, flowID)
+	// Get component's steps in this flow (use short name for registry lookup)
+	compSteps := d.registry.GetComponentSteps(compShortName, flowID)
 	if len(compSteps) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": fmt.Sprintf("Component %s does not participate in flow %s", d.componentName, flowID),
