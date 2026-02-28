@@ -3,8 +3,8 @@ set -euo pipefail
 
 # stopme.sh - Stop pcscf component container
 
-COMPONENT="pcscf"
-CONTAINER_NAME="${COMPONENT}-local"
+app="pcscf"
+CONTAINER_NAME="${app}-local-instance"
 
 # Detect container runtime
 if command -v podman &> /dev/null && [[ -z "${FORCE_DOCKER:-}" ]]; then
@@ -16,7 +16,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
-echo "🛑 Stopping ${COMPONENT} container..."
+echo "🛑 Stopping ${app} container..."
 
 if ${RUNTIME} ps -a --format "{{.Names}}" | grep -q "^$"; then
     ${RUNTIME} stop "${CONTAINER_NAME}" 2>/dev/null || true

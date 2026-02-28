@@ -4,10 +4,10 @@ set -euo pipefail
 # runme-local.sh - Run hss component container locally
 # Runs the container built by buildme.sh and exposes ports for testing
 
-COMPONENT="hss"
-PORT="${PORT:-8086}"
-IMAGE_TAG="${IMAGE_TAG:-local}"
-IMAGE="ghcr.io/dasmlab/${COMPONENT}:${IMAGE_TAG}"
+app="hss"
+CONTAINER_NAME="${app}-local-instance"
+IMAGE_TAG="local"
+IMAGE="ghcr.io/dasmlab/${app}:${IMAGE_TAG}"
 
 # Detect container runtime
 if command -v podman &> /dev/null && [[ -z "${FORCE_DOCKER:-}" ]]; then
@@ -21,7 +21,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
-echo "🚀 Starting ${COMPONENT} container locally..."
+echo "🚀 Starting ${app} container locally..."
 echo ""
 
 # Check if image exists
@@ -35,10 +35,11 @@ echo "✅ Found container image: ${IMAGE}"
 echo ""
 
 # Stop any existing container
-${RUNTIME} stop "${COMPONENT}-local" 2>/dev/null || true
-${RUNTIME} rm "${COMPONENT}-local" 2>/dev/null || true
+${RUNTIME} stop "${CONTAINER_NAME}" 2>/dev/null || true
+${RUNTIME} rm "${CONTAINER_NAME}" 2>/dev/null || true
 
 # Calculate out-of-band ports (common across all components)
+PORT="${PORT:-8086}"                    # Main server
 METRICS_PORT="${METRICS_PORT:-9096}"    # Prometheus metrics
 DIAG_PORT="${DIAG_PORT:-9086}"              # Diagnostics
 TEST_PORT="${TEST_PORT:-9186}"              # Test endpoints
@@ -46,7 +47,7 @@ TEST_PORT="${TEST_PORT:-9186}"              # Test endpoints
 # Run the container in daemon mode
 ${RUNTIME} run \
     -d \
-    --name "${COMPONENT}-local" \
+    --name "${CONTAINER_NAME}" \
     --rm \
     -p "${PORT}:${PORT}" \
     -p "${METRICS_PORT}:${METRICS_PORT}" \
@@ -60,7 +61,7 @@ ${RUNTIME} run \
 
 echo ""
 echo "✅ Container started in daemon mode"
-echo "   Container name: ${COMPONENT}-local"
+echo "   Container name: ${CONTAINER_NAME}"
 echo ""
 echo "📡 Servers (all out of band):"
 echo "   Main:      http://localhost:${PORT}"
@@ -68,5 +69,5 @@ echo "   Metrics:   http://localhost:${METRICS_PORT}/metrics (Prometheus)"
 echo "   Diagnostics: http://localhost:${DIAG_PORT}/diag/health"
 echo "   Test:      http://localhost:${TEST_PORT}/test/local"
 echo ""
-echo "View logs: ${RUNTIME} logs -f ${COMPONENT}-local"
-echo "Stop container: ${RUNTIME} stop ${COMPONENT}-local"
+echo "View logs: ${RUNTIME} logs -f ${CONTAINER_NAME}"
+echo "Stop container: ${RUNTIME} stop ${CONTAINER_NAME}"

@@ -5,7 +5,7 @@ set -euo pipefail
 # Supports both Docker and Podman
 
 app=pcscf
-tag="${1:-latest}"
+tag="${1:-local}"
 repo="ghcr.io/dasmlab"
 
 # Detect container runtime

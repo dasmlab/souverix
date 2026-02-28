@@ -1,47 +1,69 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# runme-all-local.sh - Run all Coeur subcomponents locally
+# runme-all-local.sh - Start all Coeur subcomponents locally
+# Starts all components in parallel and waits for all to complete
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
-SUBS=(bgcf hss icscf mgcf pcscf scscf)
-TAG="${1:-local}"
-
-if command -v podman &> /dev/null && [[ -z "${FORCE_DOCKER:-}" ]]; then
-    RUNTIME=podman
-    NETWORK_ARG="--network host"
-else
-    RUNTIME=docker
-    NETWORK_ARG=""
-fi
-
 echo "🚀 Starting all Coeur subcomponents locally..."
 echo ""
 
-for subcomp in "${SUBS[@]}"; do
-    if [[ -d "$subcomp" ]]; then
-        CONTAINER_NAME="coeur-${subcomp}-local"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "Starting $subcomp..."
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        
-        ${RUNTIME} stop "${CONTAINER_NAME}" 2>/dev/null || true
-        ${RUNTIME} rm -f "${CONTAINER_NAME}" 2>/dev/null || true
-        
-        ${RUNTIME} run -d \
-            --name "${CONTAINER_NAME}" \
-            --restart always \
-            ${NETWORK_ARG} \
-            -e LOG_LEVEL="${LOG_LEVEL:-info}" \
-            "${subcomp}:${TAG}" || echo "⚠️  Failed to start ${subcomp}"
-        
-        echo ""
+# Array to store PIDs
+declare -a PIDS=()
+declare -a COMPONENTS=()
+FAILED=0
+FAILED_COMPONENTS=()
+
+# Find all subcomponent directories with runme-local.sh
+for dir in */; do
+    comp="${dir%/}"
+    runme="${comp}/runme-local.sh"
+    
+    if [[ -f "${runme}" && -x "${runme}" ]]; then
+        echo "Starting ${comp}..."
+        (
+            cd "${comp}"
+            ./runme-local.sh
+        ) &
+        PIDS+=($!)
+        COMPONENTS+=("${comp}")
     fi
 done
 
-echo "✅ All subcomponents started!"
+if [[ ${#PIDS[@]} -eq 0 ]]; then
+    echo "❌ No components found with runme-local.sh"
+    exit 1
+fi
+
 echo ""
-echo "View logs: ${RUNTIME} logs -f coeur-<subcomponent>-local"
-echo "Stop all: ${RUNTIME} stop coeur-*-local"
+echo "⏳ Waiting for ${#PIDS[@]} components to start..."
+echo ""
+
+# Wait for all starts and collect exit codes
+for i in "${!PIDS[@]}"; do
+    pid="${PIDS[$i]}"
+    comp="${COMPONENTS[$i]}"
+    
+    if wait "${pid}"; then
+        echo "✅ ${comp} started successfully"
+    else
+        echo "❌ ${comp} failed to start"
+        FAILED=1
+        FAILED_COMPONENTS+=("${comp}")
+    fi
+done
+
+echo ""
+
+if [[ ${FAILED} -eq 0 ]]; then
+    echo "☑ All subcomponents started!"
+    echo ""
+    echo "View logs: podman logs -f <component>-local-instance"
+    echo "Stop all: ./stop-all.sh"
+    exit 0
+else
+    echo "❌ Failed to start: ${FAILED_COMPONENTS[*]}"
+    exit 1
+fi
