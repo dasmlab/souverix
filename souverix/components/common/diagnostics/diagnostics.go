@@ -34,6 +34,12 @@ func New(componentName, version, buildTime, gitCommit string, logger *logrus.Log
 	// Extract component short name from full name (e.g., "Souverix P-CSCF" -> "pcscf")
 	compShortName := extractComponentShortName(componentName)
 	stateVerifier := NewStateVerifier(compShortName)
+	
+	// Faux server will be initialized when unit test runs (needs caller IP)
+	fauxServer := NewFauxComponentServer(registry, logger, 19000, "")
+	
+	// State tracker for component state
+	stateTracker := NewStateTracker()
 
 	return &Diagnostics{
 		componentName: componentName,
@@ -44,6 +50,8 @@ func New(componentName, version, buildTime, gitCommit string, logger *logrus.Log
 		registry:      registry,
 		fauxGen:       fauxGen,
 		stateVerifier: stateVerifier,
+		fauxServer:    fauxServer,
+		stateTracker:  stateTracker,
 	}
 }
 
