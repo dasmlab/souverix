@@ -24,7 +24,10 @@ type Diagnostics struct {
 func New(componentName, version, buildTime, gitCommit string, logger *logrus.Logger) *Diagnostics {
 	registry := NewCallFlowRegistry()
 	fauxGen := NewFauxCallGenerator(registry)
-	stateVerifier := NewStateVerifier(componentName)
+	
+	// Extract component short name from full name (e.g., "Souverix P-CSCF" -> "pcscf")
+	compShortName := extractComponentShortName(componentName)
+	stateVerifier := NewStateVerifier(compShortName)
 
 	return &Diagnostics{
 		componentName: componentName,
@@ -36,6 +39,35 @@ func New(componentName, version, buildTime, gitCommit string, logger *logrus.Log
 		fauxGen:       fauxGen,
 		stateVerifier: stateVerifier,
 	}
+}
+
+// extractComponentShortName extracts short component name from full name
+// "Souverix P-CSCF" -> "pcscf", "Souverix I-CSCF" -> "icscf", etc.
+func extractComponentShortName(fullName string) string {
+	// Remove "Souverix " prefix if present
+	name := fullName
+	if strings.HasPrefix(name, "Souverix ") {
+		name = strings.TrimPrefix(name, "Souverix ")
+	}
+	
+	// Map common component names to short names
+	nameMap := map[string]string{
+		"P-CSCF":  "pcscf",
+		"I-CSCF":  "icscf",
+		"S-CSCF":  "scscf",
+		"BGCF":    "bgcf",
+		"MGCF":    "mgcf",
+		"HSS":     "hss",
+		"IC-SCF":  "icscf",
+		"SC-SCF":  "scscf",
+	}
+	
+	if short, exists := nameMap[name]; exists {
+		return short
+	}
+	
+	// Fallback: convert to lowercase and remove hyphens
+	return strings.ToLower(strings.ReplaceAll(name, "-", ""))
 }
 
 // RegisterRoutes registers diagnostic routes on a Gin router
@@ -109,13 +141,17 @@ func (d *Diagnostics) LocalTest(c *gin.Context) {
 // @Router /diag/unit_test [get]
 func (d *Diagnostics) UnitTest(c *gin.Context) {
 	flowID := c.Query("flow_id")
+	// Extract component short name for registry lookup
+	compShortName := extractComponentShortName(d.componentName)
+	
 	if flowID == "" {
 		// Default to first available flow for this component
-		flows := d.registry.GetComponentFlows(d.componentName)
+		flows := d.registry.GetComponentFlows(compShortName)
 		if len(flows) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "No call flows available for this component",
 				"component": d.componentName,
+				"component_short": compShortName,
 			})
 			return
 		}
@@ -159,7 +195,7 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 		}
 
 		// Generate faux request for this step
-		fauxReq, err := d.fauxGen.GenerateFauxRequest(flowID, step.Sequence, d.componentName, baseURL)
+		fauxReq, err := d.fauxGen.GenerateFauxRequest(flowID, step.Sequence, compShortName, baseURL)
 		if err != nil {
 			stepResult["error"] = err.Error()
 			stepResult["passed"] = false
