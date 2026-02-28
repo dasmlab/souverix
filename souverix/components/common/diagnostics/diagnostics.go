@@ -22,6 +22,8 @@ type Diagnostics struct {
 	fauxGen       *FauxCallGenerator
 	stateVerifier *StateVerifier
 	fauxServer    *FauxComponentServer
+	stateTracker  *StateTracker
+	stateProvider ComponentStateProvider // Optional: component can provide its own state
 }
 
 // New creates a new Diagnostics instance
