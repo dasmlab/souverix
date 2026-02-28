@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
 # Get tag from first argument or default to "latest"
-TAG="${1:-latest}"
+TAG="${1:-local}"
 
 echo "🔨 Building all Coeur subcomponents in parallel..."
 echo "   Tag: ${TAG}"
@@ -17,6 +17,7 @@ echo ""
 # Array to store PIDs
 declare -a PIDS=()
 declare -a COMPONENTS=()
+declare -a LOG_FILES=()
 
 # Find all subcomponent directories with buildme.sh
 for dir in */; do
@@ -25,9 +26,14 @@ for dir in */; do
     
     if [[ -f "${buildme}" && -x "${buildme}" ]]; then
         echo "🚀 Starting build for ${comp}..."
+        
+        # Create log file for this build
+        LOG_FILE="/tmp/build-${comp}-$$.log"
+        LOG_FILES+=("${LOG_FILE}")
+        
         (
             cd "${comp}"
-            ./buildme.sh "${TAG}"
+            ./buildme.sh "${TAG}" > "${LOG_FILE}" 2>&1
         ) &
         PIDS+=($!)
         COMPONENTS+=("${comp}")
@@ -50,6 +56,7 @@ FAILED_COMPONENTS=()
 for i in "${!PIDS[@]}"; do
     pid="${PIDS[$i]}"
     comp="${COMPONENTS[$i]}"
+    log_file="${LOG_FILES[$i]}"
     
     if wait "${pid}"; then
         echo "✅ ${comp} build completed successfully"
@@ -57,7 +64,15 @@ for i in "${!PIDS[@]}"; do
         echo "❌ ${comp} build failed"
         FAILED=1
         FAILED_COMPONENTS+=("${comp}")
+        # Show last few lines of failed build
+        echo "   Last output:"
+        tail -5 "${log_file}" | sed 's/^/   /' || true
     fi
+done
+
+# Clean up log files
+for log_file in "${LOG_FILES[@]}"; do
+    rm -f "${log_file}" 2>/dev/null || true
 done
 
 echo ""
@@ -67,5 +82,7 @@ if [[ ${FAILED} -eq 0 ]]; then
     exit 0
 else
     echo "❌ Build failed for: ${FAILED_COMPONENTS[*]}"
+    echo ""
+    echo "💡 To see full build output, run: cd <component> && ./buildme.sh ${TAG}"
     exit 1
 fi
