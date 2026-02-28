@@ -17,9 +17,11 @@ COPY common/ /common/
 # Update replace directive to point to /common in container
 RUN sed -i 's|replace github.com/dasmlab/souverix/common => ../../../../common|replace github.com/dasmlab/souverix/common => /common|g' go.mod
 
-RUN go mod download && go mod tidy
+RUN go mod download
 
 COPY components/coeur/icscf/app/ ./
+# Update go.mod after copying source to ensure all dependencies are resolved
+RUN go mod download && go mod tidy
 
 # Update go.mod after copying source to ensure all dependencies are resolved
 RUN go mod tidy
