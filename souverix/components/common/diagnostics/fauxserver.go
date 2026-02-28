@@ -195,7 +195,8 @@ func (f *FauxComponentServer) handleSIPRequest(componentName string) gin.Handler
 
 // generateFauxResponse generates a SIP response for a faux component
 func (f *FauxComponentServer) generateFauxResponse(componentName, method, flowID string, context *FauxCallContext, callID, from, to, cseq string) string {
-	flow, exists := f.registry.GetFlow(flowID)
+	// Validate flow exists
+	_, exists := f.registry.GetFlow(flowID)
 	if !exists {
 		return f.createSIPResponse(500, "Internal Server Error", callID, from, to, cseq)
 	}
