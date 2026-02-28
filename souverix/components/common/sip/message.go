@@ -2,7 +2,6 @@ package sip
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"strings"
 )
