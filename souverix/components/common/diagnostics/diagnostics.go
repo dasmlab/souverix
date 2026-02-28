@@ -414,12 +414,36 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 	// Get verification summary
 	summary := d.stateVerifier.GetSummary()
 
+	// Calculate passed/failed counts
+	passedCount := 0
+	failedCount := 0
+	for _, result := range results {
+		if passed, ok := result["passed"].(bool); ok && passed {
+			passedCount++
+		} else {
+			failedCount++
+		}
+	}
+
+	// Log final summary
+	d.logger.Infof("=== Unit Test Summary ===")
+	d.logger.Infof("Component: %s", d.componentName)
+	d.logger.Infof("Flow ID: %s", flowID)
+	d.logger.Infof("Total Steps: %d", len(results))
+	d.logger.Infof("Passed: %d", passedCount)
+	d.logger.Infof("Failed: %d", failedCount)
+	d.logger.Infof("All Passed: %v", allPassed)
+	d.logger.Infof("========================")
+
 	response := map[string]interface{}{
-		"component":    d.componentName,
-		"flow_id":      flowID,
-		"all_passed":   allPassed,
-		"steps":        results,
-		"verification": summary,
+		"component":     d.componentName,
+		"flow_id":       flowID,
+		"all_passed":    allPassed,
+		"steps":         results,
+		"steps_count":   len(results),
+		"passed_count": passedCount,
+		"failed_count":  failedCount,
+		"verification":   summary,
 	}
 
 	statusCode := http.StatusOK
