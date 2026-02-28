@@ -1,7 +1,6 @@
 package sip
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
