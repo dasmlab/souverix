@@ -12,7 +12,7 @@ ENV GOPROXY=$goproxy
 COPY components/coeur/pcscf/app/go.mod components/coeur/pcscf/app/go.sum* ./
 
 # Copy common module - will be used via replace directive
-COPY common/ /common/
+COPY components/common/ /common/
 
 # Update replace directive to point to /common in container
 RUN sed -i 's|replace github.com/dasmlab/souverix/common => ../../../../common|replace github.com/dasmlab/souverix/common => /common|g' go.mod
