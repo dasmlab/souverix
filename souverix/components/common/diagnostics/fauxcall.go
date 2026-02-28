@@ -317,23 +317,57 @@ Content-Length: 0
 }
 
 func (f *FauxCallGenerator) getNeighborURL(componentName, neighbor, baseURL string) string {
-	// Map neighbors to typical ports/components
-	neighborPorts := map[string]string{
-		"UE":      "http://localhost:5060",
-		"P-CSCF":  "http://localhost:8081",
-		"I-CSCF":  "http://localhost:8082",
-		"S-CSCF":  "http://localhost:8083",
-		"BGCF":    "http://localhost:8084",
-		"MGCF":    "http://localhost:8085",
-		"HSS":     "http://localhost:8086",
-		"PSTN":    "http://localhost:5061",
-		"Destination": "http://localhost:5062",
+	// Extract IP and base port from baseURL
+	// baseURL is like "http://192.168.1.100:9081" or "http://localhost:9081"
+	// We need to map neighbors to faux component ports (19000-19099)
+	
+	// Parse baseURL to get IP/host
+	host := "localhost"
+	if strings.HasPrefix(baseURL, "http://") {
+		urlPart := strings.TrimPrefix(baseURL, "http://")
+		parts := strings.Split(urlPart, ":")
+		if len(parts) > 0 {
+			host = parts[0]
+		}
 	}
 
-	if url, exists := neighborPorts[neighbor]; exists {
-		return url
+	// Map neighbors to faux component names, then to ports
+	neighborMap := map[string]string{
+		"UE":         "ue",
+		"P-CSCF":     "pcscf",
+		"I-CSCF":     "icscf",
+		"S-CSCF":     "scscf",
+		"BGCF":       "bgcf",
+		"MGCF":       "mgcf",
+		"HSS":        "hss",
+		"PSTN":       "pstn",
+		"Destination": "destination",
 	}
 
-	// Default to baseURL if neighbor not found
-	return baseURL
+	neighborShort := neighborMap[neighbor]
+	if neighborShort == "" {
+		// Fallback: convert to lowercase
+		neighborShort = strings.ToLower(strings.ReplaceAll(neighbor, "-", ""))
+	}
+
+	// Map component names to faux ports (19000-19099)
+	// This should match the FauxComponentServer port assignment
+	componentPorts := map[string]int{
+		"pcscf": 19000,
+		"icscf": 19001,
+		"scscf": 19002,
+		"bgcf":  19003,
+		"mgcf":  19004,
+		"hss":   19005,
+		"ue":    19006,
+		"pstn":  19007,
+	}
+
+	port, exists := componentPorts[neighborShort]
+	if !exists {
+		// Default port if not found
+		port = 19099
+	}
+
+	return fmt.Sprintf("http://%s:%d/sip", host, port)
 }

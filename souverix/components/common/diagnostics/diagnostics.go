@@ -19,6 +19,7 @@ type Diagnostics struct {
 	registry      *CallFlowRegistry
 	fauxGen       *FauxCallGenerator
 	stateVerifier *StateVerifier
+	fauxServer    *FauxComponentServer
 }
 
 // New creates a new Diagnostics instance
@@ -169,7 +170,45 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 		baseURL = fmt.Sprintf("%s://%s", scheme, c.Request.Host)
 	}
 
-	d.logger.Infof("Unit test called for flow: %s, component: %s (short: %s)", flowID, d.componentName, compShortName)
+	// Extract caller IP from request
+	callerIP := c.ClientIP()
+	if callerIP == "" || callerIP == "::1" || callerIP == "127.0.0.1" {
+		// Try to get from Host header
+		host := c.Request.Host
+		if strings.Contains(host, ":") {
+			parts := strings.Split(host, ":")
+			callerIP = parts[0]
+		} else {
+			callerIP = host
+		}
+		if callerIP == "localhost" {
+			callerIP = "127.0.0.1"
+		}
+	}
+
+	// Initialize faux server with caller IP
+	d.fauxServer = NewFauxComponentServer(d.registry, d.logger, 19000, callerIP)
+
+	// Start faux component servers
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+	defer cancel()
+
+	if err := d.fauxServer.Start(ctx, flowID, compShortName); err != nil {
+		d.logger.WithError(err).Error("Failed to start faux component servers")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("Failed to start faux servers: %v", err),
+		})
+		return
+	}
+
+	// Stop faux servers when done
+	defer func() {
+		stopCtx, stopCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer stopCancel()
+		d.fauxServer.Stop(stopCtx)
+	}()
+
+	d.logger.Infof("Unit test called for flow: %s, component: %s (short: %s), caller IP: %s", flowID, d.componentName, compShortName, callerIP)
 
 	// Get component's steps in this flow (use short name for registry lookup)
 	compSteps := d.registry.GetComponentSteps(compShortName, flowID)
