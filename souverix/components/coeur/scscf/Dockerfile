@@ -39,7 +39,5 @@ COPY --from=builder /app/docs /docs
 
 EXPOSE 8083/tcp 9093/tcp 9083/tcp 9183/tcp
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3   CMD ["/scscf", "--health-check"] || exit 1
-
 USER nonroot:nonroot
 ENTRYPOINT ["/scscf"]
