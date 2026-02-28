@@ -282,6 +282,14 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 			results = append(results, stepResult)
 			continue
 		}
+		
+		// Override neighbor endpoint if this step goes to a neighbor (use config)
+		if config != nil {
+			if neighborURL, exists := config.Neighbors[step.To]; exists {
+				fauxReq.URL = neighborURL
+				DebugLog(d.logger, "Step %d: Overriding endpoint for %s -> %s", step.Sequence, step.To, neighborURL)
+			}
+		}
 
 		stepResult["request"] = map[string]interface{}{
 			"method": fauxReq.Method,
