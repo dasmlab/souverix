@@ -30,14 +30,14 @@ type Diagnostics struct {
 func New(componentName, version, buildTime, gitCommit string, logger *logrus.Logger) *Diagnostics {
 	registry := NewCallFlowRegistry()
 	fauxGen := NewFauxCallGenerator(registry)
-	
+
 	// Extract component short name from full name (e.g., "Souverix P-CSCF" -> "pcscf")
 	compShortName := extractComponentShortName(componentName)
 	stateVerifier := NewStateVerifier(compShortName)
-	
+
 	// Faux server will be initialized when unit test runs (needs caller IP)
 	fauxServer := NewFauxComponentServer(registry, logger, 19000, "")
-	
+
 	// State tracker for component state
 	stateTracker := NewStateTracker()
 
@@ -63,23 +63,23 @@ func extractComponentShortName(fullName string) string {
 	if strings.HasPrefix(name, "Souverix ") {
 		name = strings.TrimPrefix(name, "Souverix ")
 	}
-	
+
 	// Map common component names to short names
 	nameMap := map[string]string{
-		"P-CSCF":  "pcscf",
-		"I-CSCF":  "icscf",
-		"S-CSCF":  "scscf",
-		"BGCF":    "bgcf",
-		"MGCF":    "mgcf",
-		"HSS":     "hss",
-		"IC-SCF":  "icscf",
-		"SC-SCF":  "scscf",
+		"P-CSCF": "pcscf",
+		"I-CSCF": "icscf",
+		"S-CSCF": "scscf",
+		"BGCF":   "bgcf",
+		"MGCF":   "mgcf",
+		"HSS":    "hss",
+		"IC-SCF": "icscf",
+		"SC-SCF": "scscf",
 	}
-	
+
 	if short, exists := nameMap[name]; exists {
 		return short
 	}
-	
+
 	// Fallback: convert to lowercase and remove hyphens
 	return strings.ToLower(strings.ReplaceAll(name, "-", ""))
 }
@@ -104,7 +104,7 @@ func (d *Diagnostics) RegisterRoutes(router *gin.Engine) {
 // @Router /diag/health [get]
 func (d *Diagnostics) Health(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"status": "healthy",
+		"status":    "healthy",
 		"component": d.componentName,
 	})
 }
@@ -136,7 +136,7 @@ func (d *Diagnostics) Status(c *gin.Context) {
 func (d *Diagnostics) LocalTest(c *gin.Context) {
 	d.logger.Debug("Local test endpoint called")
 	c.JSON(http.StatusOK, gin.H{
-		"resp": "success",
+		"resp":      "success",
 		"component": d.componentName,
 		"test_type": "local",
 	})
@@ -157,14 +157,14 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 	flowID := c.Query("flow_id")
 	// Extract component short name for registry lookup
 	compShortName := extractComponentShortName(d.componentName)
-	
+
 	if flowID == "" {
 		// Default to first available flow for this component
 		flows := d.registry.GetComponentFlows(compShortName)
 		if len(flows) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "No call flows available for this component",
-				"component": d.componentName,
+				"error":           "No call flows available for this component",
+				"component":       d.componentName,
 				"component_short": compShortName,
 			})
 			return
@@ -253,9 +253,9 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 	compSteps := d.registry.GetComponentSteps(compShortName, flowID)
 	if len(compSteps) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("Component %s does not participate in flow %s", d.componentName, flowID),
+			"error":     fmt.Sprintf("Component %s does not participate in flow %s", d.componentName, flowID),
 			"component": d.componentName,
-			"flow_id": flowID,
+			"flow_id":   flowID,
 		})
 		return
 	}
@@ -268,10 +268,10 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 
 	for i, step := range compSteps {
 		stepNum := i + 1
-		d.logger.Infof("=== Step %d/%d: %s %s -> %s (Interface: %s) ===", 
+		d.logger.Infof("=== Step %d/%d: %s %s -> %s (Interface: %s) ===",
 			stepNum, len(compSteps), step.Message, step.From, step.To, step.Interface)
 		d.logger.Infof("Description: %s", step.Description)
-		
+
 		stepResult := map[string]interface{}{
 			"step":        step.Sequence,
 			"step_number": stepNum,
@@ -294,7 +294,7 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 			results = append(results, stepResult)
 			continue
 		}
-		
+
 		// Override neighbor endpoint if this step goes to a neighbor (use config)
 		if config != nil {
 			if neighborURL, exists := config.Neighbors[step.To]; exists {
@@ -330,7 +330,7 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 			} else {
 				d.logger.Infof("Step %d: Received response %d from %s", step.Sequence, resp.StatusCode, step.To)
 				d.logger.Debugf("Step %d: Response Body:\n%s", step.Sequence, resp.Body)
-				
+
 				stepResult["response"] = map[string]interface{}{
 					"status_code": resp.StatusCode,
 					"body":        resp.Body,
@@ -353,7 +353,7 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 		// Use component's state provider if available, otherwise use internal tracker
 		var verification VerificationResult
 		stateKey := fmt.Sprintf("call_state_%s_%d", step.Message, step.Sequence)
-		
+
 		if d.stateProvider != nil {
 			// Component provides its own state
 			expectedValue := map[string]interface{}{
@@ -365,14 +365,14 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 		} else {
 			// Use internal state tracker - record state change for this step
 			d.stateTracker.SetState(stateKey, map[string]interface{}{
-				"step":        step.Sequence,
-				"message":     step.Message,
-				"interface":   step.Interface,
-				"direction":   step.Direction,
-				"flow_id":     flowID,
-				"timestamp":   time.Now(),
+				"step":      step.Sequence,
+				"message":   step.Message,
+				"interface": step.Interface,
+				"direction": step.Direction,
+				"flow_id":   flowID,
+				"timestamp": time.Now(),
 			})
-			
+
 			// Verify state exists using state tracker
 			_, exists := d.stateTracker.GetState(stateKey)
 			if exists {
@@ -397,7 +397,7 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 				d.logger.Warnf("Step %d: ❌ State verification failed: %s", step.Sequence, verification.Message)
 			}
 		}
-		
+
 		stepResult["state_verification"] = map[string]interface{}{
 			"passed":  verification.Passed,
 			"message": verification.Message,
@@ -436,14 +436,14 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 	d.logger.Infof("========================")
 
 	response := map[string]interface{}{
-		"component":     d.componentName,
-		"flow_id":       flowID,
-		"all_passed":    allPassed,
-		"steps":         results,
-		"steps_count":   len(results),
+		"component":    d.componentName,
+		"flow_id":      flowID,
+		"all_passed":   allPassed,
+		"steps":        results,
+		"steps_count":  len(results),
 		"passed_count": passedCount,
-		"failed_count":  failedCount,
-		"verification":   summary,
+		"failed_count": failedCount,
+		"verification": summary,
 	}
 
 	statusCode := http.StatusOK
