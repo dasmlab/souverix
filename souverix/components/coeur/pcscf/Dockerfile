@@ -20,7 +20,7 @@ COPY components/common/ /common/
 RUN sed -i 's|replace github.com/dasmlab/souverix/common => ../../../../common|replace github.com/dasmlab/souverix/common => /common|g' go.mod || \
     sed -i 's|replace github.com/dasmlab/souverix/common => ../../../../components/common|replace github.com/dasmlab/souverix/common => /common|g' go.mod
 
-RUN go mod download && go mod tidy
+RUN go mod download
 
 COPY components/coeur/pcscf/app/ ./
 
