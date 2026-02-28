@@ -2,6 +2,7 @@ package diagnostics
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -14,16 +15,26 @@ type Diagnostics struct {
 	buildTime     string
 	gitCommit     string
 	logger        *logrus.Logger
+	registry      *CallFlowRegistry
+	fauxGen       *FauxCallGenerator
+	stateVerifier *StateVerifier
 }
 
 // New creates a new Diagnostics instance
 func New(componentName, version, buildTime, gitCommit string, logger *logrus.Logger) *Diagnostics {
+	registry := NewCallFlowRegistry()
+	fauxGen := NewFauxCallGenerator(registry)
+	stateVerifier := NewStateVerifier(componentName)
+
 	return &Diagnostics{
 		componentName: componentName,
 		version:       version,
 		buildTime:     buildTime,
 		gitCommit:     gitCommit,
 		logger:        logger,
+		registry:      registry,
+		fauxGen:       fauxGen,
+		stateVerifier: stateVerifier,
 	}
 }
 
@@ -85,18 +96,136 @@ func (d *Diagnostics) LocalTest(c *gin.Context) {
 	})
 }
 
-// UnitTest returns success for unit testing in CI/CD
+// UnitTest executes unit test for a call flow
 // @Summary Unit test endpoint
-// @Description Endpoint for unit testing in CI/CD pipelines, returns success
+// @Description Executes call flow simulation for component's portion, verifies state changes
 // @Tags diagnostics
 // @Produce json
-// @Success 200 {object} map[string]string
+// @Param flow_id query string false "Call flow ID (e.g., IMS_REGISTER_AKA, SIP_INVITE_IMS_TO_IMS, SIP_INVITE_IMS_TO_PSTN)"
+// @Param base_url query string false "Base URL for component (default: http://localhost:<diag_port>)"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /diag/unit_test [get]
 func (d *Diagnostics) UnitTest(c *gin.Context) {
-	d.logger.Debug("Unit test endpoint called")
-	c.JSON(http.StatusOK, gin.H{
-		"resp": "success",
-		"component": d.componentName,
-		"test_type": "unit",
-	})
+	flowID := c.Query("flow_id")
+	if flowID == "" {
+		// Default to first available flow for this component
+		flows := d.registry.GetComponentFlows(d.componentName)
+		if len(flows) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "No call flows available for this component",
+				"component": d.componentName,
+			})
+			return
+		}
+		flowID = flows[0].FlowID
+	}
+
+	baseURL := c.Query("base_url")
+	if baseURL == "" {
+		// Try to get from request
+		scheme := "http"
+		if c.Request.TLS != nil {
+			scheme = "https"
+		}
+		baseURL = fmt.Sprintf("%s://%s", scheme, c.Request.Host)
+	}
+
+	d.logger.Infof("Unit test called for flow: %s, component: %s", flowID, d.componentName)
+
+	// Get component's steps in this flow
+	compSteps := d.registry.GetComponentSteps(d.componentName, flowID)
+	if len(compSteps) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Component %s does not participate in flow %s", d.componentName, flowID),
+			"component": d.componentName,
+			"flow_id": flowID,
+		})
+		return
+	}
+
+	// Execute call flow simulation
+	results := []map[string]interface{}{}
+	allPassed := true
+
+	for _, step := range compSteps {
+		stepResult := map[string]interface{}{
+			"step":        step.Sequence,
+			"message":     step.Message,
+			"interface":   step.Interface,
+			"direction":   step.Direction,
+			"description": step.Description,
+		}
+
+		// Generate faux request for this step
+		fauxReq, err := d.fauxGen.GenerateFauxRequest(flowID, step.Sequence, d.componentName, baseURL)
+		if err != nil {
+			stepResult["error"] = err.Error()
+			stepResult["passed"] = false
+			allPassed = false
+			results = append(results, stepResult)
+			continue
+		}
+
+		stepResult["request"] = map[string]interface{}{
+			"method": fauxReq.Method,
+			"url":    fauxReq.URL,
+			"body":   fauxReq.Body,
+		}
+
+		// Execute faux request (if it's outgoing)
+		if step.Direction == "request" {
+			resp, err := d.fauxGen.ExecuteFauxRequest(fauxReq)
+			if err != nil {
+				stepResult["error"] = err.Error()
+				stepResult["passed"] = false
+				allPassed = false
+			} else {
+				stepResult["response"] = map[string]interface{}{
+					"status_code": resp.StatusCode,
+					"body":        resp.Body,
+				}
+				stepResult["passed"] = (resp.StatusCode == fauxReq.ExpectedCode)
+				if !stepResult["passed"].(bool) {
+					allPassed = false
+				}
+			}
+		} else {
+			// For responses, we verify state instead
+			stepResult["passed"] = true
+		}
+
+		// Verify state changes (simplified - components should implement their own verification)
+		// This is a placeholder - components should implement ComponentStateProvider
+		verification := d.stateVerifier.VerifyStateExists(step.Sequence, step.Message, "call_state_"+step.Message)
+		stepResult["state_verification"] = map[string]interface{}{
+			"passed":  verification.Passed,
+			"message": verification.Message,
+		}
+
+		if !verification.Passed {
+			allPassed = false
+		}
+
+		results = append(results, stepResult)
+	}
+
+	// Get verification summary
+	summary := d.stateVerifier.GetSummary()
+
+	response := map[string]interface{}{
+		"component":    d.componentName,
+		"flow_id":      flowID,
+		"all_passed":   allPassed,
+		"steps":        results,
+		"verification": summary,
+	}
+
+	statusCode := http.StatusOK
+	if !allPassed {
+		statusCode = http.StatusInternalServerError
+	}
+
+	c.JSON(statusCode, response)
 }
