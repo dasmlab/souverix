@@ -4,7 +4,7 @@ package hss
 
 import (
 	"context"
-	"github.com/dasmlab/ims/internal/common/node"
+	"github.com/dasmlab/souverix/common/node"
 )
 
 // HSS implements the Home Subscriber Server / UDM node.

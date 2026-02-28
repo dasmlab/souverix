@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	
-	"github.com/dasmlab/ims/components/common/sip"
+	"github.com/dasmlab/souverix/common/sip"
 )
 
 // Handler handles SIP messages in MGCF

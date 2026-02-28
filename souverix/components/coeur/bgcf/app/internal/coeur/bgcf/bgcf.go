@@ -4,7 +4,7 @@ package bgcf
 
 import (
 	"context"
-	"github.com/dasmlab/ims/internal/common/node"
+	"github.com/dasmlab/souverix/common/node"
 )
 
 // BGCF implements the Breakout Gateway Control Function node.

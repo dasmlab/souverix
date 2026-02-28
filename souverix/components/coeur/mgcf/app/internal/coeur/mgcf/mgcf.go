@@ -4,7 +4,7 @@ package mgcf
 
 import (
 	"context"
-	"github.com/dasmlab/ims/internal/common/node"
+	"github.com/dasmlab/souverix/common/node"
 )
 
 // MGCF implements the Media Gateway Control Function node.

@@ -4,7 +4,7 @@ package scscf
 
 import (
 	"context"
-	"github.com/dasmlab/ims/internal/common/node"
+	"github.com/dasmlab/souverix/common/node"
 )
 
 // SCSCF implements the Serving CSCF node.

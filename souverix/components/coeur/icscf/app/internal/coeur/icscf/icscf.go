@@ -4,7 +4,7 @@ package icscf
 
 import (
 	"context"
-	"github.com/dasmlab/ims/internal/common/node"
+	"github.com/dasmlab/souverix/common/node"
 )
 
 // ICSCF implements the Interrogating CSCF node.
