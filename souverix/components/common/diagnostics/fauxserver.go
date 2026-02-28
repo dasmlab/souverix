@@ -3,9 +3,7 @@ package diagnostics
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 
