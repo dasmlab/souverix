@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // UnitTestConfig holds the configuration for unit test execution
