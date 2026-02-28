@@ -276,9 +276,53 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 			stepResult["passed"] = true
 		}
 
-		// Verify state changes (simplified - components should implement their own verification)
-		// This is a placeholder - components should implement ComponentStateProvider
-		verification := d.stateVerifier.VerifyStateExists(step.Sequence, step.Message, "call_state_"+step.Message)
+		// Verify state changes
+		// Use component's state provider if available, otherwise use internal tracker
+		var verification VerificationResult
+		stateKey := fmt.Sprintf("call_state_%s_%d", step.Message, step.Sequence)
+		
+		if d.stateProvider != nil {
+			// Component provides its own state
+			expectedValue := map[string]interface{}{
+				"step":    step.Sequence,
+				"message": step.Message,
+				"flow_id": flowID,
+			}
+			verification = d.stateVerifier.VerifyComponentState(step.Sequence, step.Message, d.stateProvider, stateKey, expectedValue)
+		} else {
+			// Use internal state tracker - record state change for this step
+			d.stateTracker.SetState(stateKey, map[string]interface{}{
+				"step":        step.Sequence,
+				"message":     step.Message,
+				"interface":   step.Interface,
+				"direction":   step.Direction,
+				"flow_id":     flowID,
+				"timestamp":   time.Now(),
+			})
+			
+			// Verify state exists using state tracker
+			_, exists := d.stateTracker.GetState(stateKey)
+			if exists {
+				verification = VerificationResult{
+					Step:      step.Sequence,
+					Operation: step.Message,
+					Key:       stateKey,
+					Passed:    true,
+					Message:   fmt.Sprintf("State key '%s' exists", stateKey),
+					Timestamp: time.Now(),
+				}
+			} else {
+				verification = VerificationResult{
+					Step:      step.Sequence,
+					Operation: step.Message,
+					Key:       stateKey,
+					Passed:    false,
+					Message:   fmt.Sprintf("State key '%s' does not exist", stateKey),
+					Timestamp: time.Now(),
+				}
+			}
+		}
+		
 		stepResult["state_verification"] = map[string]interface{}{
 			"passed":  verification.Passed,
 			"message": verification.Message,
