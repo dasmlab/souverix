@@ -21,6 +21,9 @@ RUN go mod download && go mod tidy
 
 COPY components/coeur/pcscf/app/ ./
 
+# Update go.mod after copying source to ensure all dependencies are resolved
+RUN go mod tidy
+
 RUN if grep -q "@title\|@swagger" main.go 2>/dev/null; then     /go/bin/swag init --generalInfo main.go --output docs --parseDependency --parseInternal || echo "Swagger skipped";     else echo "No Swagger annotations";     fi
 
 ARG VERSION=dev
