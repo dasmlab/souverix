@@ -220,6 +220,33 @@ func (d *Diagnostics) UnitTest(c *gin.Context) {
 		d.fauxServer.Stop(stopCtx)
 	}()
 
+	// Create unit test configuration
+	config, err := d.NewUnitTestConfig(flowID, baseURL, callerIP)
+	if err != nil {
+		d.logger.WithError(err).Error("Failed to create unit test configuration")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("Failed to create configuration: %v", err),
+		})
+		return
+	}
+
+	// Log configuration if DIAG_DEBUG is enabled
+	DebugLog(d.logger, "=== Unit Test Configuration ===")
+	DebugLog(d.logger, "Component: %s (%s)", config.ComponentName, config.ComponentShort)
+	DebugLog(d.logger, "Flow ID: %s", config.FlowID)
+	DebugLog(d.logger, "Flow Description: %s", config.FlowDescription)
+	DebugLog(d.logger, "Caller IP: %s", config.CallerIP)
+	DebugLog(d.logger, "Base URL: %s", config.BaseURL)
+	DebugLog(d.logger, "Neighbors:")
+	for neighbor, endpoint := range config.Neighbors {
+		DebugLog(d.logger, "  %s -> %s (faux port: %d)", neighbor, endpoint, config.FauxPorts[neighbor])
+	}
+	DebugLog(d.logger, "Internal Operations:")
+	for _, op := range config.InternalOps {
+		DebugLog(d.logger, "  - %s", op)
+	}
+	DebugLog(d.logger, "=== End Configuration ===")
+
 	d.logger.Infof("Unit test called for flow: %s, component: %s (short: %s), caller IP: %s", flowID, d.componentName, compShortName, callerIP)
 
 	// Get component's steps in this flow (use short name for registry lookup)

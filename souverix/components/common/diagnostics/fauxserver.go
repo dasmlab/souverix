@@ -135,9 +135,8 @@ func (f *FauxComponentServer) startComponentServer(port int, componentName strin
 	router := gin.New()
 	router.Use(gin.Recovery())
 
-	// Register handler for SIP messages
+	// Register handler for SIP messages (POST only - Any would conflict)
 	router.POST("/sip", f.handleSIPRequest(componentName))
-	router.Any("/sip", f.handleSIPRequest(componentName))
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
