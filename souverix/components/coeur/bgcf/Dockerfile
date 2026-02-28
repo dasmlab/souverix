@@ -41,7 +41,6 @@ COPY --from=builder /app/docs /docs
 
 EXPOSE 8084/tcp 9094/tcp 9084/tcp 9184/tcp
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3   CMD ["/bgcf", "--health-check"] || exit 1
 
 USER nonroot:nonroot
 ENTRYPOINT ["/bgcf"]

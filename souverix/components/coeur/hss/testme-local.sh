@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# testme-local.sh - Run local tests for COMPONENT component
-# Tests the /diag/local_test endpoint
+# testme-local.sh - Run local tests for hss component
+# Tests the /diag/local_test endpoint on diagnostics server
 
 COMPONENT="hss"
 DIAG_PORT="${DIAG_PORT:-9086}"
@@ -16,7 +16,7 @@ echo ""
 
 # Check if component is running
 if ! curl -s -f "http://localhost:${DIAG_PORT}/diag/health" > /dev/null 2>&1; then
-    echo "❌ Component is not running on port ${DIAG_PORT}"
+    echo "❌ Component diagnostics server is not running on port ${DIAG_PORT}"
     echo "   Start it with: ./runme-local.sh"
     exit 1
 fi
