@@ -19,23 +19,32 @@ trap "rm -rf ${TMPDIR}" EXIT
 # Start all tests in parallel
 PIDS=()
 for comp in "${COMPONENTS[@]}"; do
-    if [ -f "${comp}/testme-unit.sh" ]; then
-        echo "Starting unit test for ${comp}..."
+    if [ -f "${comp}/testme-unit.sh" ] && [ -x "${comp}/testme-unit.sh" ]; then
+        echo "🚀 Starting unit test for ${comp}..."
         (
-            "${comp}/testme-unit.sh" > "${TMPDIR}/${comp}.log" 2>&1
+            cd "${comp}"
+            ./testme-unit.sh > "${TMPDIR}/${comp}.log" 2>&1
             echo $? > "${TMPDIR}/${comp}.exit"
         ) &
         PIDS+=($!)
     else
-        echo "⚠️  ${comp}/testme-unit.sh not found, skipping"
+        echo "⚠️  ${comp}/testme-unit.sh not found or not executable, skipping"
     fi
 done
 
+if [ ${#PIDS[@]} -eq 0 ]; then
+    echo "❌ No components found with testme-unit.sh"
+    exit 1
+fi
+
 # Wait for all tests to complete
 echo ""
-echo "Waiting for all tests to complete..."
+echo "⏳ Waiting for ${#PIDS[@]} tests to complete..."
+echo ""
+
+# Wait for all tests and collect exit codes
 for pid in "${PIDS[@]}"; do
-    wait "${pid}"
+    wait "${pid}" || true
 done
 
 # Show results
@@ -64,7 +73,7 @@ for comp in "${COMPONENTS[@]}"; do
         FAILED_COUNT=$((FAILED_COUNT + 1))
         ALL_PASSED=false
         echo "   Last 5 lines:"
-        tail -n 5 "${TMPDIR}/${comp}.log" | sed 's/^/   /'
+        tail -n 5 "${TMPDIR}/${comp}.log" 2>/dev/null | sed 's/^/   /' || echo "   (no output)"
     fi
 done
 
@@ -80,5 +89,7 @@ if [ "${ALL_PASSED}" == "true" ]; then
 else
     echo ""
     echo "❌ Some unit tests failed"
+    echo ""
+    echo "💡 To see full test output, run: cd <component> && ./testme-unit.sh"
     exit 1
 fi
